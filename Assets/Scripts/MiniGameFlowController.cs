@@ -136,7 +136,7 @@ public class MiniGameFlowController : MonoBehaviour
         int previousIndex = WrapIndex(currentIndex - 1);
         int nextIndex = WrapIndex(currentIndex + 1);
 
-        float slotOffset = swipeFeedController != null ? swipeFeedController.SwipeDistance : 1400f;
+        float slotOffset = GetSlotOffset();
         previousInstance = SpawnGameInstance(previousIndex, slotOffset);
         currentInstance = SpawnGameInstance(currentIndex, 0f);
         nextInstance = SpawnGameInstance(nextIndex, -slotOffset);
@@ -147,27 +147,12 @@ public class MiniGameFlowController : MonoBehaviour
             return;
         }
 
-        currentEntry = gameEntries[currentIndex];
-        currentMiniGame = currentInstance.GetComponent<IMiniGame>() ?? currentInstance.GetComponentInChildren<IMiniGame>();
-        currentTimedMiniGame = currentInstance.GetComponent<TimedMiniGameBase>() ?? currentInstance.GetComponentInChildren<TimedMiniGameBase>();
-
-        if (currentMiniGame == null)
+        if (!BindCurrentMiniGame(currentInstance))
         {
-            Debug.LogError($"MiniGameFlowController: prefab '{currentEntry.prefab.name}' has no IMiniGame implementation.");
-            CleanupAllVisibleGames();
             return;
         }
 
-        if (currentTimedMiniGame != null)
-        {
-            currentTimedMiniGame.SetDuration(currentEntry.timeLimit);
-        }
-
-        currentMiniGame.Setup(HandleMiniGameFinished);
-        currentMiniGame.Begin();
-
-        hudController?.ShowGameplay();
-        hudController?.SetMiniGameTitle(currentEntry.displayName);
+        StartCurrentMiniGame();
         Debug.Log($"[MiniGameFlow] Active mini-game is '{currentEntry.displayName}'. Prev and next are pre-rendered.");
     }
 
@@ -341,8 +326,28 @@ public class MiniGameFlowController : MonoBehaviour
 
     private void CompleteTransition(int step)
     {
-        currentIndex = WrapIndex(currentIndex + Math.Sign(step));
-        RebuildVisibleGames();
+        if (!isRunning || step == 0)
+        {
+            isTransitionRequested = false;
+            return;
+        }
+
+        if (Math.Sign(step) > 0)
+        {
+            ShiftForward();
+        }
+        else
+        {
+            ShiftBackward();
+        }
+
+        if (swipeFeedController != null)
+        {
+            swipeFeedController.ResetFeedPosition();
+        }
+
+        isTransitionRequested = false;
+        swipeStarted = false;
     }
 
     private int WrapIndex(int index)
@@ -358,6 +363,97 @@ public class MiniGameFlowController : MonoBehaviour
 
     private void CleanupAllVisibleGames()
     {
+        CleanupCurrentMiniGameBindings();
+
+        DestroySlotInstance(ref previousInstance);
+        DestroySlotInstance(ref currentInstance);
+        DestroySlotInstance(ref nextInstance);
+    }
+
+    private void ShiftForward()
+    {
+        float slotOffset = GetSlotOffset();
+        int nextIndex = WrapIndex(currentIndex + 1);
+        int newFarIndex = WrapIndex(nextIndex + 1);
+
+        DestroySlotInstance(ref previousInstance);
+        CleanupCurrentMiniGameBindings();
+
+        previousInstance = currentInstance;
+        currentInstance = nextInstance;
+        nextInstance = SpawnGameInstance(newFarIndex, -slotOffset);
+
+        currentIndex = nextIndex;
+        ApplySlotPositions(slotOffset);
+        if (BindCurrentMiniGame(currentInstance))
+        {
+            StartCurrentMiniGame();
+        }
+    }
+
+    private void ShiftBackward()
+    {
+        float slotOffset = GetSlotOffset();
+        int previousIndex = WrapIndex(currentIndex - 1);
+        int newFarIndex = WrapIndex(previousIndex - 1);
+
+        DestroySlotInstance(ref nextInstance);
+        CleanupCurrentMiniGameBindings();
+
+        nextInstance = currentInstance;
+        currentInstance = previousInstance;
+        previousInstance = SpawnGameInstance(newFarIndex, slotOffset);
+
+        currentIndex = previousIndex;
+        ApplySlotPositions(slotOffset);
+        if (BindCurrentMiniGame(currentInstance))
+        {
+            StartCurrentMiniGame();
+        }
+    }
+
+    private void ApplySlotPositions(float slotOffset)
+    {
+        SetInstanceAnchoredY(previousInstance, slotOffset);
+        SetInstanceAnchoredY(currentInstance, 0f);
+        SetInstanceAnchoredY(nextInstance, -slotOffset);
+    }
+
+    private bool BindCurrentMiniGame(GameObject instance)
+    {
+        currentEntry = gameEntries[currentIndex];
+        currentMiniGame = instance.GetComponent<IMiniGame>() ?? instance.GetComponentInChildren<IMiniGame>();
+        currentTimedMiniGame = instance.GetComponent<TimedMiniGameBase>() ?? instance.GetComponentInChildren<TimedMiniGameBase>();
+
+        if (currentMiniGame != null)
+        {
+            return true;
+        }
+
+        Debug.LogError($"MiniGameFlowController: prefab '{currentEntry.prefab.name}' has no IMiniGame implementation.");
+        CleanupAllVisibleGames();
+        isRunning = false;
+        isTransitionRequested = false;
+        return false;
+    }
+
+    private void StartCurrentMiniGame()
+    {
+        if (currentTimedMiniGame != null)
+        {
+            currentTimedMiniGame.SetDuration(currentEntry.timeLimit);
+        }
+
+        currentMiniGame.Setup(HandleMiniGameFinished);
+        currentMiniGame.Begin();
+
+        hudController?.ShowGameplay();
+        hudController?.HideLevelComplete();
+        hudController?.SetMiniGameTitle(currentEntry.displayName);
+    }
+
+    private void CleanupCurrentMiniGameBindings()
+    {
         if (currentMiniGame != null)
         {
             currentMiniGame.Cleanup();
@@ -366,10 +462,29 @@ public class MiniGameFlowController : MonoBehaviour
 
         currentTimedMiniGame = null;
         currentEntry = null;
+    }
 
-        DestroySlotInstance(ref previousInstance);
-        DestroySlotInstance(ref currentInstance);
-        DestroySlotInstance(ref nextInstance);
+    private float GetSlotOffset()
+    {
+        return swipeFeedController != null ? swipeFeedController.SwipeDistance : 1400f;
+    }
+
+    private static void SetInstanceAnchoredY(GameObject instance, float anchoredY)
+    {
+        if (instance == null)
+        {
+            return;
+        }
+
+        RectTransform rectTransform = instance.GetComponent<RectTransform>() ?? instance.GetComponentInChildren<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, anchoredY);
+            return;
+        }
+
+        Vector3 localPosition = instance.transform.localPosition;
+        instance.transform.localPosition = new Vector3(localPosition.x, anchoredY, localPosition.z);
     }
 
     private static void DestroySlotInstance(ref GameObject instance)
