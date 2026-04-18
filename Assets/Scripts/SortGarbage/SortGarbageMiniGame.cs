@@ -21,6 +21,8 @@ public class SortGarbageMiniGame : TimedMiniGameBase
 
     private SortGarbageItemData currentItem;
 
+    private int rightCount;
+
     public override void Setup(System.Action<MiniGameResult> onFinished)
     {
         base.Setup(onFinished);
@@ -40,6 +42,22 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         SetZoneAlpha(leftZoneHighlight, 0.18f);
         SetZoneAlpha(rightZoneHighlight, 0.18f);
 
+        SpawnNewItem();
+    }
+
+    public override void Cleanup()
+    {
+        if (itemView != null)
+            itemView.Swiped -= HandleSwiped;
+
+        base.Cleanup();
+    }
+
+    private void SpawnNewItem()
+    {
+        if (items == null || items.Count == 0)
+            return;
+
         currentItem = items[Random.Range(0, items.Count)];
 
         if (itemView != null)
@@ -49,14 +67,6 @@ public class SortGarbageMiniGame : TimedMiniGameBase
             itemView.Swiped -= HandleSwiped;
             itemView.Swiped += HandleSwiped;
         }
-    }
-
-    public override void Cleanup()
-    {
-        if (itemView != null)
-            itemView.Swiped -= HandleSwiped;
-
-        base.Cleanup();
     }
 
     private void HandleSwiped(SortCategory selectedCategory)
@@ -77,13 +87,19 @@ public class SortGarbageMiniGame : TimedMiniGameBase
 
         if (!isCorrect)
         {
-            Debug.LogError($"WRONG! Selected: {selectedCategory}, Correct: {currentItem.CorrectCategory}");
-
             RestartGame();
             return;
+        }else
+        {
+            rightCount++;
+            if (rightCount >= 5)
+            {
+                Debug.Log("Player sorted 5 items correctly, finishing mini game...");
+                Finish(MiniGameResult.Win);
+            }
         }
 
-        Finish(MiniGameResult.Win);
+        SpawnNewItem();
     }
 
     protected override void OnTimeExpired()
@@ -111,12 +127,6 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         SetZoneAlpha(leftZoneHighlight, 0.18f);
         SetZoneAlpha(rightZoneHighlight, 0.18f);
 
-        currentItem = items[Random.Range(0, items.Count)];
-
-        if (itemView != null)
-        {
-            itemView.ResetView();
-            itemView.SetData(currentItem.Icon, currentItem.DisplayName);
-        }
+        SpawnNewItem();
     }
 }
