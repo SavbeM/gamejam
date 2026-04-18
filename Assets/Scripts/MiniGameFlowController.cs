@@ -11,6 +11,10 @@ public class MiniGameFlowController : MonoBehaviour
     [SerializeField] private SwipeFeedController swipeFeedController;
     [SerializeField] private HUDController hudController;
 
+    [Header("Next Level Input")]
+    [SerializeField] private float nextLevelSwipeThresholdPixels = 160f;
+    [SerializeField] private float nextLevelSwipeMaxHorizontalRatio = 0.75f;
+
     private readonly Queue<MiniGameEntry> gameQueue = new();
     private GameObject currentInstance;
     private IMiniGame currentMiniGame;
@@ -40,11 +44,6 @@ public class MiniGameFlowController : MonoBehaviour
         if (!isRunning)
         {
             return;
-        }
-
-        if (hudController != null && currentTimedMiniGame != null)
-        {
-            hudController.SetMiniGameTimer(currentTimedMiniGame.TimeLeft);
         }
 
         HandleNextLevelInput();
@@ -85,7 +84,6 @@ public class MiniGameFlowController : MonoBehaviour
         if (hudController != null)
         {
             hudController.HideLevelComplete();
-            hudController.SetMiniGameTimer(0f);
         }
     }
 
@@ -180,7 +178,7 @@ public class MiniGameFlowController : MonoBehaviour
         {
             Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with WIN.");
             waitingForNextLevelInput = true;
-            hudController?.ShowLevelComplete("LEVEL CLEARED", "Press ↑ or ↓ to next level");
+            hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe ↑/↓ or press ↑/↓ to next level");
             return;
         }
 
@@ -200,6 +198,85 @@ public class MiniGameFlowController : MonoBehaviour
         {
             RequestNextLevelTransition("keyboard arrow");
         }
+
+        if (TryConsumeNextLevelSwipe(out string swipeSource))
+        {
+            RequestNextLevelTransition(swipeSource);
+        }
+    }
+
+    private bool TryConsumeNextLevelSwipe(out string inputSource)
+    {
+        inputSource = null;
+
+        if (isTransitionRequested)
+        {
+            nextLevelSwipeStarted = false;
+            return false;
+        }
+
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                nextLevelSwipeStarted = true;
+                swipeStartPosition = touch.position;
+                return false;
+            }
+
+            if (!nextLevelSwipeStarted)
+            {
+                return false;
+            }
+
+            if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                nextLevelSwipeStarted = false;
+                Vector2 delta = touch.position - swipeStartPosition;
+                return EvaluateSwipeDelta(delta, out inputSource);
+            }
+
+            return false;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            nextLevelSwipeStarted = true;
+            swipeStartPosition = Input.mousePosition;
+            return false;
+        }
+
+        if (nextLevelSwipeStarted && Input.GetMouseButtonUp(0))
+        {
+            nextLevelSwipeStarted = false;
+            Vector2 delta = (Vector2)Input.mousePosition - swipeStartPosition;
+            return EvaluateSwipeDelta(delta, out inputSource);
+        }
+
+        return false;
+    }
+
+    private bool EvaluateSwipeDelta(Vector2 delta, out string inputSource)
+    {
+        inputSource = null;
+
+        float absY = Mathf.Abs(delta.y);
+        float absX = Mathf.Abs(delta.x);
+
+        if (absY < Mathf.Max(1f, nextLevelSwipeThresholdPixels))
+        {
+            return false;
+        }
+
+        if (absX > absY * Mathf.Max(0f, nextLevelSwipeMaxHorizontalRatio))
+        {
+            return false;
+        }
+
+        inputSource = delta.y > 0f ? "swipe up" : "swipe down";
+        return true;
     }
 
     public void RequestNextLevelFromUpButton()

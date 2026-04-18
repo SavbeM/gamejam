@@ -45,6 +45,12 @@ public class HUDController : MonoBehaviour
         HideLevelComplete();
     }
 
+    public void HideLevelComplete()
+    {
+        SetGroup(levelCompleteGroup, false);
+    }
+
+
     public void ShowGameplay()
     {
         SetGroup(gameplayGroup, true);
@@ -106,22 +112,9 @@ public class HUDController : MonoBehaviour
     public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Press ↑ or ↓ to next level")
     {
         Debug.Log("ShowLevelComplete called");
-
-        if (levelCompleteTitleText != null)
-            levelCompleteTitleText.text = title;
-        else
-            Debug.LogError("levelCompleteTitleText is NULL");
-
-        if (levelCompleteHintText != null)
-            levelCompleteHintText.text = hint;
-        else
-            Debug.LogError("levelCompleteHintText is NULL");
-
-        if (levelCompleteGroup == null)
-        {
-            Debug.LogError("levelCompleteGroup is NULL");
-            return;
-        }
+        EnsureOverlayDependencies();
+        ApplyOverlayStage(OverlayStage.LevelComplete, title, hint);
+    }
 
     private void EnsureGameplayGroupReference()
     {
