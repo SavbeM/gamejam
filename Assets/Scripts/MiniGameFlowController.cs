@@ -19,6 +19,8 @@ public class MiniGameFlowController : MonoBehaviour
     private bool isRunning;
     private bool waitingForNextLevelInput;
     private bool isTransitionRequested;
+    private bool nextLevelSwipeStarted;
+    private Vector2 swipeStartPosition;
 
     private void Awake()
     {
@@ -76,6 +78,7 @@ public class MiniGameFlowController : MonoBehaviour
         isRunning = false;
         waitingForNextLevelInput = false;
         isTransitionRequested = false;
+        nextLevelSwipeStarted = false;
 
         CleanupCurrentMiniGame();
 
@@ -111,6 +114,12 @@ public class MiniGameFlowController : MonoBehaviour
     {
         waitingForNextLevelInput = false;
         isTransitionRequested = false;
+        nextLevelSwipeStarted = false;
+
+        if (hudController != null)
+        {
+            hudController.HideLevelComplete();
+        }
 
         if (!isRunning || miniGameHost == null)
         {
@@ -153,7 +162,6 @@ public class MiniGameFlowController : MonoBehaviour
             hudController.ShowGameplay();
             hudController.HideLevelComplete();
             hudController.SetMiniGameTitle(currentEntry.displayName);
-            hudController.SetMiniGameTimer(currentEntry.timeLimit);
         }
 
         currentMiniGame.Setup(HandleMiniGameFinished);

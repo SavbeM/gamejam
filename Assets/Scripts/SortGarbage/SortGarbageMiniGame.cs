@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SortGarbageMiniGame : TimedMiniGameBase
+public class SortGarbageMiniGame : MiniGameBase
 {
     [Header("Data")]
     [SerializeField] private List<SortGarbageItemData> items = new();
@@ -20,6 +20,8 @@ public class SortGarbageMiniGame : TimedMiniGameBase
     [SerializeField] private string rightLabel = "Edible";
 
     private SortGarbageItemData currentItem;
+
+    private int rightCount;
 
     public override void Setup(System.Action<MiniGameResult> onFinished)
     {
@@ -41,6 +43,22 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         SetZoneAlpha(leftZoneHighlight, 0.18f);
         SetZoneAlpha(rightZoneHighlight, 0.18f);
 
+        SpawnNewItem();
+    }
+
+    public override void Cleanup()
+    {
+        if (itemView != null)
+            itemView.Swiped -= HandleSwiped;
+
+        base.Cleanup();
+    }
+
+    private void SpawnNewItem()
+    {
+        if (items == null || items.Count == 0)
+            return;
+
         currentItem = items[Random.Range(0, items.Count)];
 
         if (itemView != null)
@@ -52,14 +70,6 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         }
 
         Debug.Log($"[SortGarbage] New item spawned: {currentItem.DisplayName}.");
-    }
-
-    public override void Cleanup()
-    {
-        if (itemView != null)
-            itemView.Swiped -= HandleSwiped;
-
-        base.Cleanup();
     }
 
     private void HandleSwiped(SortCategory selectedCategory)
@@ -81,20 +91,19 @@ public class SortGarbageMiniGame : TimedMiniGameBase
 
         if (!isCorrect)
         {
-            Debug.LogError($"WRONG! Selected: {selectedCategory}, Correct: {currentItem.CorrectCategory}");
-
             RestartGame();
             return;
+        }else
+        {
+            rightCount++;
+            if (rightCount >= 5)
+            {
+                Debug.Log("Player sorted 5 items correctly, finishing mini game...");
+                Finish(MiniGameResult.Win);
+            }
         }
 
-        Finish(MiniGameResult.Win);
-        Debug.Log("[SortGarbage] Mini-game passed.");
-    }
-
-    protected override void OnTimeExpired()
-    {
-        Debug.Log("[SortGarbage] Time expired.");
-        Finish(MiniGameResult.Fail);
+        SpawnNewItem();
     }
 
     private static void SetZoneAlpha(Image image, float alpha)
@@ -117,13 +126,6 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         SetZoneAlpha(leftZoneHighlight, 0.18f);
         SetZoneAlpha(rightZoneHighlight, 0.18f);
 
-        currentItem = items[Random.Range(0, items.Count)];
-        Debug.Log($"[SortGarbage] Round restarted with item: {currentItem.DisplayName}.");
-
-        if (itemView != null)
-        {
-            itemView.ResetView();
-            itemView.SetData(currentItem.Icon, currentItem.DisplayName);
-        }
+        SpawnNewItem();
     }
 }

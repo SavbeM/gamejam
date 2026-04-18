@@ -20,7 +20,6 @@ public class HUDController : MonoBehaviour
 
     [Header("Top")]
     [SerializeField] private TMP_Text miniGameTitleText;
-    [SerializeField] private TMP_Text miniGameTimerText;
 
     [Header("Bottom progress")]
     [SerializeField] private Image procrastinationFill;
@@ -79,16 +78,6 @@ public class HUDController : MonoBehaviour
         miniGameTitleText.text = value ?? string.Empty;
     }
 
-    public void SetMiniGameTimer(float value)
-    {
-        if (miniGameTimerText == null)
-        {
-            return;
-        }
-
-        miniGameTimerText.text = $"{Mathf.Max(0f, value):0}s";
-    }
-
     public void SetProgress(float normalized)
     {
         if (procrastinationProgressBar != null)
@@ -116,13 +105,23 @@ public class HUDController : MonoBehaviour
 
     public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Press ↑ or ↓ to next level")
     {
-        ApplyOverlayStage(OverlayStage.LevelComplete, title, hint);
-    }
+        Debug.Log("ShowLevelComplete called");
 
-    public void HideLevelComplete()
-    {
-        ApplyOverlayStage(OverlayStage.Hidden);
-    }
+        if (levelCompleteTitleText != null)
+            levelCompleteTitleText.text = title;
+        else
+            Debug.LogError("levelCompleteTitleText is NULL");
+
+        if (levelCompleteHintText != null)
+            levelCompleteHintText.text = hint;
+        else
+            Debug.LogError("levelCompleteHintText is NULL");
+
+        if (levelCompleteGroup == null)
+        {
+            Debug.LogError("levelCompleteGroup is NULL");
+            return;
+        }
 
     private void EnsureGameplayGroupReference()
     {
@@ -341,5 +340,7 @@ public class HUDController : MonoBehaviour
         group.alpha = visible ? 1f : 0f;
         group.interactable = visible;
         group.blocksRaycasts = visible;
+
+        Debug.Log($"SetGroup: {(visible ? "Showing" : "Hiding")} {group.alpha} {group.name}");
     }
 }

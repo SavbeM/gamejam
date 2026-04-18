@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a246f65115651452ca5c8e7687e2eb8b, type: 3}
+  m_Name: UnscrambleWordEntry
+  m_EditorClassIdentifier: 
+  gameId: unscramble_word
+  displayName: Unscramble Word
+  prefab: {fileID: 6165513772962068644, guid: 06b6aa53837e342c4b16117fe08a0f09, type: 3}
+  timeLimit: 1000

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class TimedMiniGameBase : MiniGameBase
 {
-    [SerializeField] protected float duration = 5f;
+    [SerializeField] protected float duration = 10f;
     protected float timeLeft;
 
     public float Duration => duration;
