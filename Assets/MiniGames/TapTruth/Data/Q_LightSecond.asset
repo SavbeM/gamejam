@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11041f6ca2e7f43dd873b5b50cf49895, type: 3}
   m_Name: Q_LightSecond
   m_EditorClassIdentifier: 
-  questionText: 
+  questionText: How far does light travel in one second?
   answers:
-  - 
-  - 
-  - 
-  - 
-  correctAnswerIndex: 0
+  - 300 km
+  - 30,000 km
+  - 3,000,000 km
+  - 300,000 km
+  correctAnswerIndex: 3
