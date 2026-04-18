@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SortGarbageMiniGame : TimedMiniGameBase
+public class SortGarbageMiniGame : MiniGameBase
 {
     [Header("Data")]
     [SerializeField] private List<SortGarbageItemData> items = new();
@@ -26,6 +26,7 @@ public class SortGarbageMiniGame : TimedMiniGameBase
     public override void Setup(System.Action<MiniGameResult> onFinished)
     {
         base.Setup(onFinished);
+        Debug.Log("[SortGarbage] Setup started.");
 
         if (items == null || items.Count == 0)
         {
@@ -67,6 +68,8 @@ public class SortGarbageMiniGame : TimedMiniGameBase
             itemView.Swiped -= HandleSwiped;
             itemView.Swiped += HandleSwiped;
         }
+
+        Debug.Log($"[SortGarbage] New item spawned: {currentItem.DisplayName}.");
     }
 
     private void HandleSwiped(SortCategory selectedCategory)
@@ -74,6 +77,7 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         if (!IsRunning || IsFinished || currentItem == null)
             return;
 
+        Debug.Log($"[SortGarbage] Swipe input received. Selected={selectedCategory}, Expected={currentItem.CorrectCategory}.");
         bool isCorrect = selectedCategory == currentItem.CorrectCategory;
 
         if (selectedCategory == SortCategory.Inedible)
@@ -100,11 +104,6 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         }
 
         SpawnNewItem();
-    }
-
-    protected override void OnTimeExpired()
-    {
-        Finish(MiniGameResult.Fail);
     }
 
     private static void SetZoneAlpha(Image image, float alpha)

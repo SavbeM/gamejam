@@ -928,8 +928,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 0, y: -150}
+  m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &962779295
 MonoBehaviour:
@@ -1850,6 +1850,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1412860714}
   - component: {fileID: 1412860713}
+  - component: {fileID: 1412860715}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -1871,7 +1872,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playlist: {fileID: 11400000, guid: 1a292fb703610cb4fbf32488e4c9724a, type: 2}
   miniGameHost: {fileID: 829672666}
-  swipeFeedController: {fileID: 0}
+  swipeFeedController: {fileID: 1273490767}
   hudController: {fileID: 2030241297}
 --- !u!4 &1412860714
 Transform:
@@ -1889,11 +1890,23 @@ Transform:
   - {fileID: 1273490766}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1415442788 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7793031334358861594, guid: 38d77753495bed2498ad3c782a0fa8e4, type: 3}
-  m_PrefabInstance: {fileID: 4377679174601719206}
+--- !u!114 &1412860715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412860712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1982b09a2feaf410189f2d286434191c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  totalSessionTime: 45
+  autoStartOnSceneLoad: 1
+  allowTapToRestart: 1
+  flowController: {fileID: 1412860713}
+  hudController: {fileID: 2030241297}
 --- !u!1 &1509568689
 GameObject:
   m_ObjectHideFlags: 0
@@ -2471,6 +2484,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1722445196}
   m_CullTransparentMesh: 1
+--- !u!114 &1722445201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722445196}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3369e7382dad467b87aefef4d36c58e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playlist: {fileID: 0}
+  miniGameHost: {fileID: 0}
+  swipeFeedController: {fileID: 0}
+  hudController: {fileID: 0}
 --- !u!1 &1736386725
 GameObject:
   m_ObjectHideFlags: 0
@@ -3483,14 +3512,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameplayGroup: {fileID: 0}
-  gameOverGroup: {fileID: 0}
-  miniGameTitleText: {fileID: 0}
-  miniGameTimerText: {fileID: 0}
+  gameOverGroup: {fileID: 1509568691}
+  gameplayGroupPrefab: {fileID: 0}
+  miniGameTitleText: {fileID: 1785663917}
+  miniGameTimerText: {fileID: 1517908740}
   procrastinationFill: {fileID: 0}
+  procrastinationProgressBar: {fileID: 0}
+  procrastinationProgressBarPrefab: {fileID: 7076724674982368705, guid: 74c372ab4a74048c2b25fb473f18b017, type: 3}
+  bottomMetaGroup: {fileID: 275137222}
+  progressBarParent: {fileID: 0}
   resultText: {fileID: 0}
   levelCompleteGroup: {fileID: 1509568691}
   levelCompleteTitleText: {fileID: 1861497194}
   levelCompleteHintText: {fileID: 962779295}
+  levelCompleteBackground: {fileID: 0}
 --- !u!1 &2055417298
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f07521ed0b3334860b84b769222ba0d8, type: 3}
+  m_Name: TapTruthData
+  m_EditorClassIdentifier: 
+  questions:
+  - {fileID: 11400000, guid: 8244a82a07b96470b88ac1939626c3ba, type: 2}
+  - {fileID: 11400000, guid: 37b4e9eefc3e8433fae3064cf33c8792, type: 2}
+  - {fileID: 11400000, guid: 3d7a118ed8fb94befbd66a32ba301b37, type: 2}

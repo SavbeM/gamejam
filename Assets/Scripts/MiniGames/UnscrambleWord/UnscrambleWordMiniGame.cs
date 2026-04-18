@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UnscrambleWordMiniGame : TimedMiniGameBase
 {
@@ -11,16 +10,20 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
     [SerializeField] private Transform scrambledContainer;
     [SerializeField] private Transform answerContainer;
     [SerializeField] private LetterTileView letterTilePrefab;
-    [SerializeField] private LetterSlotView slotPrefab; // префаб слота
+    [SerializeField] private LetterSlotView slotPrefab;
 
     [Header("Layout")]
     [SerializeField] private float tileSize = 60f;
     [SerializeField] private float tileSpacing = 10f;
-    [SerializeField] private float rowSpacing = 20f; // расстояние между рядами
+
+    [Header("Win Condition")]
+    [SerializeField] private int wordsToWin = 5;
 
     private string currentWord;
     private List<LetterTileView> spawnedTiles = new();
     private List<LetterSlotView> answerSlots = new();
+    private List<UnscrambleWordData> remainingWords = new();
+    private int solvedCount = 0;
 
     public override void Setup(System.Action<MiniGameResult> onFinished)
     {
@@ -32,20 +35,16 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
             return;
         }
 
-        currentWord = words[Random.Range(0, words.Count)].Word;
-        SpawnLetters();
+        solvedCount = 0;
+        remainingWords = new List<UnscrambleWordData>(words);
+        ShuffleWords(remainingWords);
+        SpawnNextWord();
     }
 
     public override void Cleanup()
     {
-        foreach (var tile in spawnedTiles)
-            if (tile != null) Destroy(tile.gameObject);
-        spawnedTiles.Clear();
-
-        foreach (var slot in answerSlots)
-            if (slot != null) Destroy(slot.gameObject);
-        answerSlots.Clear();
-
+        ClearTiles();
+        ClearSlots();
         base.Cleanup();
     }
 
@@ -62,22 +61,27 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
         }
     }
 
-    private void SpawnLetters()
+    private void SpawnNextWord()
     {
-        // Очищаем старое
-        foreach (var tile in spawnedTiles)
-            if (tile != null) Destroy(tile.gameObject);
-        spawnedTiles.Clear();
+        ClearTiles();
+        ClearSlots();
 
-        foreach (var slot in answerSlots)
-            if (slot != null) Destroy(slot.gameObject);
-        answerSlots.Clear();
+        if (remainingWords.Count == 0)
+        {
+            remainingWords = new List<UnscrambleWordData>(words);
+            ShuffleWords(remainingWords);
+        }
+
+        int index = Random.Range(0, remainingWords.Count);
+        currentWord = remainingWords[index].Word;
+        remainingWords.RemoveAt(index);
+
+        timeLeft = duration;
 
         float step = tileSize + tileSpacing;
         float totalWidth = currentWord.Length * tileSize + (currentWord.Length - 1) * tileSpacing;
         float startX = -totalWidth / 2f + tileSize / 2f;
 
-        // Спавним слоты в answerContainer
         for (int i = 0; i < currentWord.Length; i++)
         {
             LetterSlotView slot = Instantiate(slotPrefab, answerContainer);
@@ -91,11 +95,9 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
             answerSlots.Add(slot);
         }
 
-        // Перемешиваем буквы
         char[] letters = currentWord.ToCharArray();
         Shuffle(letters);
 
-        // Спавним буквы в scrambledContainer
         for (int i = 0; i < letters.Length; i++)
         {
             LetterTileView tile = Instantiate(letterTilePrefab, scrambledContainer);
@@ -106,12 +108,12 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
             tileRect.sizeDelta = new Vector2(tileSize, tileSize);
             tileRect.anchoredPosition = new Vector2(startX + i * step, 0);
             tile.SetLetter(letters[i]);
-            tile.OnPlaced += CheckWin;
+            tile.OnPlaced += CheckWord;
             spawnedTiles.Add(tile);
         }
     }
 
-    private void CheckWin()
+    private void CheckWord()
     {
         if (!IsRunning || IsFinished) return;
         if (!AllSlotsFilled()) return;
@@ -121,9 +123,15 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
             assembled += slot.Letter;
 
         if (assembled == currentWord)
-            Finish(MiniGameResult.Win);
-        else
-            Finish(MiniGameResult.Fail);
+        {
+            solvedCount++;
+            Debug.Log($"Solved {solvedCount}/{wordsToWin}");
+
+            if (solvedCount >= wordsToWin)
+                Finish(MiniGameResult.Win);
+            else
+                SpawnNextWord();
+        }
     }
 
     private bool AllSlotsFilled()
@@ -138,12 +146,35 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
         Finish(MiniGameResult.Fail);
     }
 
+    private void ClearTiles()
+    {
+        foreach (var tile in spawnedTiles)
+            if (tile != null) Destroy(tile.gameObject);
+        spawnedTiles.Clear();
+    }
+
+    private void ClearSlots()
+    {
+        foreach (var slot in answerSlots)
+            if (slot != null) Destroy(slot.gameObject);
+        answerSlots.Clear();
+    }
+
     private static void Shuffle(char[] arr)
     {
         for (int i = arr.Length - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
             (arr[i], arr[j]) = (arr[j], arr[i]);
+        }
+    }
+
+    private static void ShuffleWords(List<UnscrambleWordData> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
         }
     }
 }

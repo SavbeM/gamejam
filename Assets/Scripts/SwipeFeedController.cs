@@ -18,7 +18,13 @@ public class SwipeFeedController : MonoBehaviour
 
     public void PlaySwipeDownTransition(Action onComplete)
     {
-        if (isAnimating) return;
+        if (isAnimating)
+        {
+            Debug.LogWarning("[SwipeFeed] Swipe transition request ignored because animation is in progress.");
+            return;
+        }
+
+        Debug.Log("[SwipeFeed] Swipe transition started.");
         StartCoroutine(AnimateSwipe(onComplete));
     }
 
@@ -41,6 +47,7 @@ public class SwipeFeedController : MonoBehaviour
 
         feedRoot.anchoredPosition = initialPosition;
         isAnimating = false;
+        Debug.Log("[SwipeFeed] Swipe transition finished.");
         onComplete?.Invoke();
     }
 

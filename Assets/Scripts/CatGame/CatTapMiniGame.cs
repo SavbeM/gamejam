@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CatTapMiniGame : TimedMiniGameBase
+public class CatTapMiniGame : MiniGameBase
 {
     [Header("Setup")]
     public GameObject catPrefab;
@@ -113,7 +113,6 @@ public class CatTapMiniGame : TimedMiniGameBase
 
         bool win = clicked >= needToWin;
 
-        // ✅ ВИПРАВЛЕНО ТУТ
         if (win)
             Finish(MiniGameResult.Win);
         else
