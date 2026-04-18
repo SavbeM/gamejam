@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Mindless-Swipe.slnx",
+    "dotnet.defaultSolution": "gamejam.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }

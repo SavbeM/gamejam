@@ -5,19 +5,16 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Session")]
-    [SerializeField] private float totalSessionTime = 45f;
     [SerializeField] private bool autoStartOnSceneLoad = true;
     [SerializeField] private bool allowTapToRestart = true;
 
     [Header("Refs")]
     [SerializeField] private MiniGameFlowController flowController;
     [SerializeField] private HUDController hudController;
+    [SerializeField] private GlobalProgressTimer globalProgressTimer;
 
-    private float remainingTime;
     private bool isGameActive;
 
-    public float RemainingTime => remainingTime;
-    public float TotalSessionTime => totalSessionTime;
     public bool IsGameActive => isGameActive;
 
     private void Awake()
@@ -29,7 +26,6 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        Debug.Log("[GameManager] Awake completed.");
 
         if (flowController == null)
         {
@@ -39,6 +35,31 @@ public class GameManager : MonoBehaviour
         if (hudController == null)
         {
             hudController = FindFirstObjectByType<HUDController>();
+        }
+
+        if (globalProgressTimer == null)
+        {
+            globalProgressTimer = FindFirstObjectByType<GlobalProgressTimer>();
+        }
+
+        if (globalProgressTimer != null)
+        {
+            globalProgressTimer.TimerEmptied += HandleTimerEmptied;
+        }
+
+        Debug.Log("[GameManager] Awake completed.");
+    }
+
+    private void OnDestroy()
+    {
+        if (globalProgressTimer != null)
+        {
+            globalProgressTimer.TimerEmptied -= HandleTimerEmptied;
+        }
+
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 
@@ -46,36 +67,20 @@ public class GameManager : MonoBehaviour
     {
         if (autoStartOnSceneLoad)
         {
-            Debug.Log("[GameManager] Auto-start is enabled. Starting session.");
             StartSession();
         }
     }
 
     private void Update()
     {
-        if (!isGameActive)
+        if (isGameActive)
         {
-            if (allowTapToRestart && Input.GetMouseButtonDown(0))
-            {
-                Debug.Log("[GameManager] Restart input received.");
-                RestartSession();
-            }
-
             return;
         }
 
-        remainingTime -= Time.deltaTime;
-        remainingTime = Mathf.Max(remainingTime, 0f);
-
-        if (hudController != null && totalSessionTime > 0f)
+        if (allowTapToRestart && Input.GetMouseButtonDown(0))
         {
-            hudController.SetProgress(remainingTime / totalSessionTime);
-        }
-
-        if (remainingTime <= 0f)
-        {
-            Debug.Log("[GameManager] Session timer reached zero.");
-            EndSession();
+            RestartSession();
         }
     }
 
@@ -83,7 +88,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameActive)
         {
-            Debug.LogWarning("[GameManager] StartSession was called while session is already active.");
+            Debug.LogWarning("[GameManager] StartSession called while already active.");
             return;
         }
 
@@ -97,43 +102,80 @@ public class GameManager : MonoBehaviour
             hudController = FindFirstObjectByType<HUDController>();
         }
 
-        remainingTime = totalSessionTime;
+        if (globalProgressTimer == null)
+        {
+            globalProgressTimer = FindFirstObjectByType<GlobalProgressTimer>();
+        }
+
+        if (flowController == null || hudController == null || globalProgressTimer == null)
+        {
+            Debug.LogError("[GameManager] Missing required references.");
+            return;
+        }
+
         isGameActive = true;
-        Debug.Log($"[GameManager] Session started. Duration: {totalSessionTime:0.##}s.");
 
-        hudController?.ShowGameplay();
-        hudController?.SetProgress(1f);
+        hudController.ShowGameplay();
+        hudController.HideLevelComplete();
 
-        if (flowController != null)
-        {
-            flowController.StartFlow();
-        }
-        else
-        {
-            Debug.LogError("GameManager: MiniGameFlowController is missing.");
-        }
+        globalProgressTimer.ResetTimer(startImmediately: true);
+        flowController.StartFlow();
+
+        Debug.Log("[GameManager] Session started.");
     }
 
-    public void EndSession()
+    public void EndSessionAsFinished()
     {
         if (!isGameActive)
         {
-            Debug.LogWarning("[GameManager] EndSession was called while session is not active.");
             return;
         }
 
         isGameActive = false;
-        Debug.Log("[GameManager] Session ended.");
+
         flowController?.StopFlow();
+        globalProgressTimer?.StopTimer();
         hudController?.ShowGameFinished();
+
+        Debug.Log("[GameManager] Session finished.");
+    }
+
+    public void EndSessionAsGameOver()
+    {
+        if (!isGameActive)
+        {
+            return;
+        }
+
+        isGameActive = false;
+
+        flowController?.StopFlow();
+        globalProgressTimer?.StopTimer();
+        hudController?.ShowGameOver();
+
+        Debug.Log("[GameManager] Session ended with game over.");
     }
 
     public void RestartSession()
     {
         Debug.Log("[GameManager] Restarting session.");
-        flowController?.StopFlow();
-        remainingTime = totalSessionTime;
+
         isGameActive = false;
+
+        flowController?.StopFlow();
+        globalProgressTimer?.StopTimer();
+
         StartSession();
+    }
+
+    private void HandleTimerEmptied()
+    {
+        if (!isGameActive)
+        {
+            return;
+        }
+
+        Debug.Log("[GameManager] Global timer reached zero.");
+        EndSessionAsGameOver();
     }
 }
