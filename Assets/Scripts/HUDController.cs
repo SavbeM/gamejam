@@ -16,6 +16,7 @@ public class HUDController : MonoBehaviour
     [Header("Main HUD")]
     [SerializeField] private CanvasGroup gameplayGroup;
     [SerializeField] private CanvasGroup gameOverGroup;
+    [SerializeField] private CanvasGroup gameplayGroupPrefab;
 
     [Header("Top")]
     [SerializeField] private TMP_Text miniGameTitleText;
@@ -24,6 +25,7 @@ public class HUDController : MonoBehaviour
     [Header("Bottom progress")]
     [SerializeField] private Image procrastinationFill;
     [SerializeField] private HorizontalProgressBar procrastinationProgressBar;
+    [SerializeField] private HorizontalProgressBar procrastinationProgressBarPrefab;
     [SerializeField] private RectTransform progressBarParent;
 
     [Header("Optional result flash")]
@@ -37,7 +39,7 @@ public class HUDController : MonoBehaviour
 
     private void Awake()
     {
-        EnsureGameplayGroupFromOverlayUI();
+        EnsureGameplayGroupReference();
         EnsureOverlayDependencies();
         EnsureProgressBar();
         HideLevelComplete();
@@ -121,7 +123,7 @@ public class HUDController : MonoBehaviour
         ApplyOverlayStage(OverlayStage.Hidden);
     }
 
-    private void EnsureGameplayGroupFromOverlayUI()
+    private void EnsureGameplayGroupReference()
     {
         if (gameplayGroup != null)
         {
@@ -134,50 +136,36 @@ public class HUDController : MonoBehaviour
             return;
         }
 
-        CanvasGroup discoveredLevelCompleteGroup = levelCompleteGroup;
-        if (discoveredLevelCompleteGroup == null)
+        Transform existingGroupTransform = overlayTransform.Find("GameplayGroup");
+        if (existingGroupTransform != null)
         {
-            Transform levelCompleteTransform = overlayTransform.Find("LevelCompleteOverlay");
-            if (levelCompleteTransform != null)
-            {
-                discoveredLevelCompleteGroup = levelCompleteTransform.GetComponent<CanvasGroup>();
-            }
+            gameplayGroup = existingGroupTransform.GetComponent<CanvasGroup>();
         }
 
-        GameObject gameplayGroupObject = new("GameplayGroup", typeof(RectTransform), typeof(CanvasGroup));
-        RectTransform gameplayGroupTransform = gameplayGroupObject.GetComponent<RectTransform>();
-        gameplayGroupTransform.SetParent(overlayTransform, false);
-        gameplayGroupTransform.anchorMin = Vector2.zero;
-        gameplayGroupTransform.anchorMax = Vector2.one;
-        gameplayGroupTransform.offsetMin = Vector2.zero;
-        gameplayGroupTransform.offsetMax = Vector2.zero;
-
-        for (int childIndex = overlayTransform.childCount - 1; childIndex >= 0; childIndex--)
+        if (gameplayGroup != null)
         {
-            Transform child = overlayTransform.GetChild(childIndex);
-            if (child == gameplayGroupTransform)
-            {
-                continue;
-            }
+            return;
+        }
 
-            if (discoveredLevelCompleteGroup != null && child == discoveredLevelCompleteGroup.transform)
+        if (gameplayGroupPrefab != null)
+        {
+            CanvasGroup instantiatedGroup = Instantiate(gameplayGroupPrefab, overlayTransform);
+            instantiatedGroup.name = "GameplayGroup";
+            RectTransform gameplayGroupRect = instantiatedGroup.transform as RectTransform;
+            if (gameplayGroupRect != null)
             {
-                continue;
+                gameplayGroupRect.anchorMin = Vector2.zero;
+                gameplayGroupRect.anchorMax = Vector2.one;
+                gameplayGroupRect.offsetMin = Vector2.zero;
+                gameplayGroupRect.offsetMax = Vector2.zero;
+                gameplayGroupRect.SetSiblingIndex(0);
             }
 
-            child.SetParent(gameplayGroupTransform, true);
+            gameplayGroup = instantiatedGroup;
+            return;
         }
 
-        gameplayGroup = gameplayGroupObject.GetComponent<CanvasGroup>();
-        if (gameOverGroup == null)
-        {
-            gameOverGroup = discoveredLevelCompleteGroup;
-        }
-
-        if (levelCompleteGroup == null)
-        {
-            levelCompleteGroup = discoveredLevelCompleteGroup;
-        }
+        Debug.LogWarning("HUDController could not resolve GameplayGroup. Assign gameplayGroup or gameplayGroupPrefab in the inspector.", this);
     }
 
     private void EnsureOverlayDependencies()
@@ -253,40 +241,36 @@ public class HUDController : MonoBehaviour
 
         RectTransform topBarRect = (transform.Find("GameplayGroup/TopBar") ?? transform.Find("TopBar")) as RectTransform;
 
-        GameObject root = new("ProcrastinationProgressBar", typeof(RectTransform), typeof(Image), typeof(HorizontalProgressBar));
-        RectTransform rootRect = root.GetComponent<RectTransform>();
-        rootRect.SetParent(parent, false);
-        rootRect.SetAsLastSibling();
-        rootRect.anchorMin = new Vector2(0.5f, 1f);
-        rootRect.anchorMax = new Vector2(0.5f, 1f);
-        rootRect.pivot = new Vector2(0.5f, 1f);
-        rootRect.anchoredPosition = new Vector2(0f, CalculateProgressBarYOffset(parent, topBarRect));
-        rootRect.sizeDelta = new Vector2(480f, 22f);
+        HorizontalProgressBar existingBar = parent.GetComponentInChildren<HorizontalProgressBar>(true);
+        if (existingBar != null)
+        {
+            procrastinationProgressBar = existingBar;
+            RectTransform existingRect = procrastinationProgressBar.transform as RectTransform;
+            if (existingRect != null)
+            {
+                existingRect.SetAsLastSibling();
+            }
+            return;
+        }
 
-        Image rootImage = root.GetComponent<Image>();
-        rootImage.color = new Color(0f, 0f, 0f, 0.55f);
-        rootImage.raycastTarget = false;
+        if (procrastinationProgressBarPrefab == null)
+        {
+            Debug.LogWarning("HUDController could not resolve ProcrastinationProgressBar. Assign procrastinationProgressBar or procrastinationProgressBarPrefab in the inspector.", this);
+            return;
+        }
 
-        GameObject overlay = new("Overlay", typeof(RectTransform), typeof(Image));
-        RectTransform overlayRect = overlay.GetComponent<RectTransform>();
-        overlayRect.SetParent(rootRect, false);
-        overlayRect.anchorMin = new Vector2(1f, 0f);
-        overlayRect.anchorMax = new Vector2(1f, 1f);
-        overlayRect.pivot = new Vector2(1f, 0.5f);
-        overlayRect.offsetMin = Vector2.zero;
-        overlayRect.offsetMax = Vector2.zero;
+        procrastinationProgressBar = Instantiate(procrastinationProgressBarPrefab, parent);
+        procrastinationProgressBar.name = "ProcrastinationProgressBar";
 
-        Image overlayImage = overlay.GetComponent<Image>();
-        overlayImage.color = new Color(0.15f, 0.95f, 0.45f, 0.95f);
-        overlayImage.raycastTarget = false;
-
-        procrastinationProgressBar = root.GetComponent<HorizontalProgressBar>();
-        procrastinationProgressBar.rectTransform = rootRect;
-        procrastinationProgressBar.overlayBar = overlayRect;
-        procrastinationProgressBar.sizeMin = 0f;
-        procrastinationProgressBar.sizeMax = 1f;
-        procrastinationProgressBar.invertProgress = true;
-        procrastinationProgressBar.transitionTime = 0.15f;
+        RectTransform rootRect = procrastinationProgressBar.transform as RectTransform;
+        if (rootRect != null)
+        {
+            rootRect.SetAsLastSibling();
+            rootRect.anchorMin = new Vector2(0.5f, 1f);
+            rootRect.anchorMax = new Vector2(0.5f, 1f);
+            rootRect.pivot = new Vector2(0.5f, 1f);
+            rootRect.anchoredPosition = new Vector2(0f, CalculateProgressBarYOffset(parent, topBarRect));
+        }
     }
 
     private float CalculateProgressBarYOffset(RectTransform parent, RectTransform topBarRect)
