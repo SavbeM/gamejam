@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11041f6ca2e7f43dd873b5b50cf49895, type: 3}
   m_Name: Q_ClosestStar
   m_EditorClassIdentifier: 
-  questionText: 
+  questionText: Which star is closest to Earth after the Sun?
   answers:
-  - 
-  - 
-  - 
-  - 
-  correctAnswerIndex: 0
+  - Sirius
+  - Proxima Centauri
+  - Betelgeuse
+  - Vega
+  correctAnswerIndex: 1

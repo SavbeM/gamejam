@@ -576,8 +576,10 @@ MonoBehaviour:
   overlayBar: {fileID: 3404310586326334436}
   sizeMin: 0.02
   sizeMax: 0.98
-  invertProgress: 0
+  invertProgress: 1
   transitionTime: 0
+  drainDuration: 20
+  playOnStart: 1
   rectTransform: {fileID: 3711650666069771274}
 --- !u!114 &1142768166791535289
 MonoBehaviour:
@@ -592,7 +594,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableTesting: 0
-  progress: 0
+  progress: 1
 --- !u!1 &8284886303767396067
 GameObject:
   m_ObjectHideFlags: 0

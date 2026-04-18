@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a246f65115651452ca5c8e7687e2eb8b, type: 3}
   m_Name: TapTruth_Entry
   m_EditorClassIdentifier: 
-  gameId: 
-  displayName: 
-  prefab: {fileID: 0}
-  timeLimit: 5
+  gameId: tap_truth_1
+  displayName: TapTruth
+  GameRules: "Decide quickly. One choice \u2014 right or wrong."
+  prefab: {fileID: 6028642166914528690, guid: dc81f50320b464ca387a16a6e20b9569, type: 3}

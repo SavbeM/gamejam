@@ -352,6 +352,22 @@ RectTransform:
   m_AnchoredPosition: {x: 20, y: 24}
   m_SizeDelta: {x: -140, y: 120}
   m_Pivot: {x: 0, y: 0}
+--- !u!224 &331705984 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+  m_PrefabInstance: {fileID: 1319708152}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &331705985 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7494035205087911393, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+  m_PrefabInstance: {fileID: 1319708152}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb5802e5d3c3472ca89151b0c6e3758, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &378898447
 GameObject:
   m_ObjectHideFlags: 0
@@ -845,15 +861,15 @@ RectTransform:
   m_GameObject: {fileID: 916627316}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.009873, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 116269083}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -7.5129395, y: 0}
+  m_SizeDelta: {x: -667.985, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &916627318
 MonoBehaviour:
@@ -868,14 +884,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 2471527011543705350, guid: 0fead76c51cc44578b264b15d70b46eb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1764,6 +1780,148 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1001 &1319708152
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2030241296}
+    m_Modifications:
+    - target: {fileID: 4772229939995309983, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229939995309983, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229939995309983, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229939995309983, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229939995309983, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229939995309983, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048343, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 570
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -505
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048344, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940550048345, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_Name
+      value: ProgressBar 2 Red
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940996110693, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 33
+      objectReference: {fileID: 0}
+    - target: {fileID: 4772229940996110693, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -0.071777344
+      objectReference: {fileID: 0}
+    - target: {fileID: 7494035205087911393, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: sizeMin
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7494035205087911393, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+      propertyPath: invertProgress
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4772229940550048343, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2902d8d0d5e77a94aae2e24d3ec43d87, type: 3}
 --- !u!1 &1346149428
 GameObject:
   m_ObjectHideFlags: 0
@@ -1850,6 +2008,7 @@ GameObject:
   - component: {fileID: 1412860714}
   - component: {fileID: 1412860713}
   - component: {fileID: 1412860715}
+  - component: {fileID: 1412860716}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -1870,9 +2029,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playlist: {fileID: 11400000, guid: 1a292fb703610cb4fbf32488e4c9724a, type: 2}
+  rewardTimeOnWin: 10
+  penaltyTimeOnFail: 0
   miniGameHost: {fileID: 829672666}
   swipeFeedController: {fileID: 1273490767}
   hudController: {fileID: 2030241297}
+  globalProgressTimer: {fileID: 1412860716}
   nextLevelSwipeThresholdPixels: 160
   nextLevelSwipeMaxHorizontalRatio: 0.75
 --- !u!4 &1412860714
@@ -1903,10 +2065,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1982b09a2feaf410189f2d286434191c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalSessionTime: 45
   autoStartOnSceneLoad: 1
   allowTapToRestart: 1
   flowController: {fileID: 1412860713}
+  hudController: {fileID: 2030241297}
+  globalProgressTimer: {fileID: 0}
+--- !u!114 &1412860716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1412860712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b8082c99c2b4d64b8a679d20aa00cad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxTime: 30
+  startTime: 25
+  drainPerSecond: 1
   hudController: {fileID: 2030241297}
 --- !u!1 &1509568689
 GameObject:
@@ -2194,8 +2372,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Try to hold focus. Don't let the signal drift.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2499,9 +2677,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playlist: {fileID: 0}
+  rewardTimeOnWin: 5
+  penaltyTimeOnFail: 0
   miniGameHost: {fileID: 0}
   swipeFeedController: {fileID: 0}
   hudController: {fileID: 0}
+  globalProgressTimer: {fileID: 0}
   nextLevelSwipeThresholdPixels: 160
   nextLevelSwipeMaxHorizontalRatio: 0.75
 --- !u!1 &1736386725
@@ -2563,8 +2744,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: '@feed_user'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3496,6 +3677,7 @@ RectTransform:
   - {fileID: 1316032413}
   - {fileID: 275137222}
   - {fileID: 1509568690}
+  - {fileID: 331705984}
   m_Father: {fileID: 133708841}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3518,10 +3700,10 @@ MonoBehaviour:
   gameplayGroup: {fileID: 0}
   gameOverGroup: {fileID: 1509568691}
   gameplayGroupPrefab: {fileID: 0}
-  miniGameTitleText: {fileID: 1785663917}
-  procrastinationFill: {fileID: 0}
-  procrastinationProgressBar: {fileID: 0}
-  procrastinationProgressBarPrefab: {fileID: 7076724674982368705, guid: 74c372ab4a74048c2b25fb473f18b017, type: 3}
+  miniGameTitleText: {fileID: 1736386727}
+  miniGameRulesText: {fileID: 1583915613}
+  procrastinationProgressBar: {fileID: 331705985}
+  procrastinationProgressBarPrefab: {fileID: 0}
   bottomMetaGroup: {fileID: 275137222}
   progressBarParent: {fileID: 0}
   resultText: {fileID: 0}

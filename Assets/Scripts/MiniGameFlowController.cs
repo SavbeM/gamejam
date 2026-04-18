@@ -5,25 +5,30 @@ public class MiniGameFlowController : MonoBehaviour
 {
     [Header("Data")]
     [SerializeField] private MiniGamePlaylist playlist;
+    [SerializeField] private float rewardTimeOnWin = 5f;
+    [SerializeField] private float penaltyTimeOnFail = 0f;
 
     [Header("Scene refs")]
     [SerializeField] private Transform miniGameHost;
     [SerializeField] private SwipeFeedController swipeFeedController;
     [SerializeField] private HUDController hudController;
+    [SerializeField] private GlobalProgressTimer globalProgressTimer;
 
     [Header("Next Level Input")]
     [SerializeField] private float nextLevelSwipeThresholdPixels = 160f;
     [SerializeField] private float nextLevelSwipeMaxHorizontalRatio = 0.75f;
 
     private readonly Queue<MiniGameEntry> gameQueue = new();
+
     private GameObject currentInstance;
     private IMiniGame currentMiniGame;
-    private TimedMiniGameBase currentTimedMiniGame;
     private MiniGameEntry currentEntry;
+
     private bool isRunning;
     private bool waitingForNextLevelInput;
     private bool isTransitionRequested;
     private bool nextLevelSwipeStarted;
+
     private Vector2 swipeStartPosition;
 
     private void Awake()
@@ -36,6 +41,11 @@ public class MiniGameFlowController : MonoBehaviour
         if (swipeFeedController == null)
         {
             swipeFeedController = FindFirstObjectByType<SwipeFeedController>();
+        }
+
+        if (globalProgressTimer == null)
+        {
+            globalProgressTimer = FindFirstObjectByType<GlobalProgressTimer>();
         }
     }
 
@@ -57,34 +67,34 @@ public class MiniGameFlowController : MonoBehaviour
             return;
         }
 
-        isRunning = true;
-        Debug.Log("[MiniGameFlow] Flow started.");
         BuildQueue();
 
         if (gameQueue.Count == 0)
         {
-            Debug.LogError("MiniGameFlowController: queue is empty.");
-            isRunning = false;
+            Debug.LogError("[MiniGameFlow] Queue is empty.");
             return;
         }
 
+        isRunning = true;
+        waitingForNextLevelInput = false;
+        isTransitionRequested = false;
+        nextLevelSwipeStarted = false;
+
         SpawnNextGame();
+        Debug.Log("[MiniGameFlow] Flow started.");
     }
 
     public void StopFlow()
     {
-        Debug.Log("[MiniGameFlow] Flow stopped.");
         isRunning = false;
         waitingForNextLevelInput = false;
         isTransitionRequested = false;
         nextLevelSwipeStarted = false;
 
         CleanupCurrentMiniGame();
+        hudController?.HideLevelComplete();
 
-        if (hudController != null)
-        {
-            hudController.HideLevelComplete();
-        }
+        Debug.Log("[MiniGameFlow] Flow stopped.");
     }
 
     private void BuildQueue()
@@ -93,7 +103,7 @@ public class MiniGameFlowController : MonoBehaviour
 
         if (playlist == null || playlist.games == null || playlist.games.Count == 0)
         {
-            Debug.LogError("MiniGameFlowController: playlist is empty or missing.");
+            Debug.LogError("[MiniGameFlow] Playlist is empty or missing.");
             return;
         }
 
@@ -114,10 +124,7 @@ public class MiniGameFlowController : MonoBehaviour
         isTransitionRequested = false;
         nextLevelSwipeStarted = false;
 
-        if (hudController != null)
-        {
-            hudController.HideLevelComplete();
-        }
+        hudController?.HideLevelComplete();
 
         if (!isRunning || miniGameHost == null)
         {
@@ -133,37 +140,29 @@ public class MiniGameFlowController : MonoBehaviour
 
         if (gameQueue.Count == 0)
         {
-            Debug.LogError("MiniGameFlowController: no games to spawn.");
+            Debug.LogError("[MiniGameFlow] No games to spawn.");
             return;
         }
 
         currentEntry = gameQueue.Dequeue();
-        Debug.Log($"[MiniGameFlow] Spawning mini-game '{currentEntry.displayName}'.");
         currentInstance = Instantiate(currentEntry.prefab, miniGameHost);
         currentMiniGame = currentInstance.GetComponent<IMiniGame>() ?? currentInstance.GetComponentInChildren<IMiniGame>();
-        currentTimedMiniGame = currentInstance.GetComponent<TimedMiniGameBase>() ?? currentInstance.GetComponentInChildren<TimedMiniGameBase>();
 
         if (currentMiniGame == null)
         {
-            Debug.LogError($"MiniGameFlowController: prefab '{currentEntry.prefab.name}' has no IMiniGame implementation.");
+            Debug.LogError($"[MiniGameFlow] Prefab '{currentEntry.prefab.name}' has no IMiniGame implementation.");
             CleanupCurrentMiniGame();
             return;
         }
 
-        if (currentTimedMiniGame != null)
-        {
-            currentTimedMiniGame.SetDuration(currentEntry.timeLimit);
-        }
-
-        if (hudController != null)
-        {
-            hudController.ShowGameplay();
-            hudController.HideLevelComplete();
-            hudController.SetMiniGameTitle(currentEntry.displayName);
-        }
+        hudController?.ShowGameplay();
+        hudController?.HideLevelComplete();
+        hudController?.SetMiniGameTitle(currentEntry.displayName);
+        hudController?.SetMiniGameRules(currentEntry.GameRules);
 
         currentMiniGame.Setup(HandleMiniGameFinished);
         currentMiniGame.Begin();
+
         Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry.displayName}' started.");
     }
 
@@ -177,12 +176,21 @@ public class MiniGameFlowController : MonoBehaviour
         if (result == MiniGameResult.Win)
         {
             Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with WIN.");
+
+            globalProgressTimer?.AddTime(rewardTimeOnWin);
+
             waitingForNextLevelInput = true;
             hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe ↑/↓ or press ↑/↓ to next level");
             return;
         }
 
         Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with result: {result}.");
+
+        if (result == MiniGameResult.Fail && penaltyTimeOnFail > 0f)
+        {
+            globalProgressTimer?.RemoveTime(penaltyTimeOnFail);
+        }
+
         hudController?.PlayMiniGameResult(result);
         GoToNextGame();
     }
@@ -298,8 +306,10 @@ public class MiniGameFlowController : MonoBehaviour
 
         isTransitionRequested = true;
         waitingForNextLevelInput = false;
-        Debug.Log($"[MiniGameFlow] Next level requested via {inputSource}. Starting transition.");
+
+        Debug.Log($"[MiniGameFlow] Next level requested via {inputSource}.");
         hudController?.HideLevelComplete();
+
         GoToNextGame();
     }
 
@@ -312,12 +322,12 @@ public class MiniGameFlowController : MonoBehaviour
                 isTransitionRequested = false;
                 SpawnNextGame();
             });
+
+            return;
         }
-        else
-        {
-            isTransitionRequested = false;
-            SpawnNextGame();
-        }
+
+        isTransitionRequested = false;
+        SpawnNextGame();
     }
 
     private void CleanupCurrentMiniGame()
@@ -328,7 +338,6 @@ public class MiniGameFlowController : MonoBehaviour
             currentMiniGame = null;
         }
 
-        currentTimedMiniGame = null;
         currentEntry = null;
 
         if (currentInstance != null)
