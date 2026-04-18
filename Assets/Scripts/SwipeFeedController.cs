@@ -11,7 +11,8 @@ public enum SwipeTransitionDirection
 public class SwipeFeedController : MonoBehaviour
 {
     [SerializeField] private RectTransform feedRoot;
-    [SerializeField] private float swipeDistance = 1400f;
+    [SerializeField] private RectTransform viewport;
+    [SerializeField] private float fallbackSwipeDistance = 1400f;
     [SerializeField] private float swipeDuration = 0.3f;
     [SerializeField] private AnimationCurve swipeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
@@ -19,7 +20,7 @@ public class SwipeFeedController : MonoBehaviour
     private Coroutine swipeCoroutine;
     private bool isAnimating;
     public bool IsAnimating => isAnimating;
-    public float SwipeDistance => swipeDistance;
+    public float SwipeDistance => CalculateSwipeDistance();
 
     private void Awake()
     {
@@ -54,7 +55,7 @@ public class SwipeFeedController : MonoBehaviour
 
         Vector2 start = initialPosition;
         Vector2 offset = direction == SwipeTransitionDirection.Up ? Vector2.up : Vector2.down;
-        Vector2 end = initialPosition + offset * swipeDistance;
+        Vector2 end = initialPosition + offset * CalculateSwipeDistance();
 
         float time = 0f;
         while (time < swipeDuration)
@@ -66,10 +67,34 @@ public class SwipeFeedController : MonoBehaviour
             yield return null;
         }
 
-        feedRoot.anchoredPosition = initialPosition;
         isAnimating = false;
         swipeCoroutine = null;
         Debug.Log("[SwipeFeed] Swipe transition finished.");
         onComplete?.Invoke();
+    }
+
+    public void ResetFeedPosition()
+    {
+        if (feedRoot == null)
+        {
+            return;
+        }
+
+        feedRoot.anchoredPosition = initialPosition;
+    }
+
+    private float CalculateSwipeDistance()
+    {
+        if (viewport != null)
+        {
+            return Mathf.Max(1f, viewport.rect.height);
+        }
+
+        if (feedRoot != null && feedRoot.parent is RectTransform parentRect)
+        {
+            return Mathf.Max(1f, parentRect.rect.height);
+        }
+
+        return Mathf.Max(1f, fallbackSwipeDistance);
     }
 }
