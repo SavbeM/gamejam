@@ -111,7 +111,7 @@ public class HUDController : MonoBehaviour
         resultText.text = result == MiniGameResult.Win ? "DONE" : "MISSED";
     }
 
-    public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Swipe to next level")
+    public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Press ↑ or ↓ to next level")
     {
         ApplyOverlayStage(OverlayStage.LevelComplete, title, hint);
     }
@@ -243,8 +243,7 @@ public class HUDController : MonoBehaviour
         RectTransform parent = progressBarParent;
         if (parent == null)
         {
-            Transform fallbackParent = transform.Find("GameplayGroup") ?? transform;
-            parent = fallbackParent as RectTransform;
+            parent = transform as RectTransform;
         }
 
         if (parent == null)
@@ -257,6 +256,7 @@ public class HUDController : MonoBehaviour
         GameObject root = new("ProcrastinationProgressBar", typeof(RectTransform), typeof(Image), typeof(HorizontalProgressBar));
         RectTransform rootRect = root.GetComponent<RectTransform>();
         rootRect.SetParent(parent, false);
+        rootRect.SetAsLastSibling();
         rootRect.anchorMin = new Vector2(0.5f, 1f);
         rootRect.anchorMax = new Vector2(0.5f, 1f);
         rootRect.pivot = new Vector2(0.5f, 1f);
@@ -325,7 +325,7 @@ public class HUDController : MonoBehaviour
         {
             case OverlayStage.LevelComplete:
                 resolvedTitle ??= "LEVEL CLEARED";
-                resolvedHint ??= "Swipe to next level";
+                resolvedHint ??= "Press ↑ or ↓ to next level";
                 backgroundColor = new Color(0.04f, 0.12f, 0.2f, 0.72f);
                 break;
             case OverlayStage.GameOver:

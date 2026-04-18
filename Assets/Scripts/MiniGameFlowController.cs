@@ -18,7 +18,7 @@ public class MiniGameFlowController : MonoBehaviour
     private MiniGameEntry currentEntry;
     private bool isRunning;
     private bool waitingForNextLevelInput;
-    private Vector2 swipeStartPosition;
+    private bool isTransitionRequested;
 
     private void Awake()
     {
@@ -75,6 +75,7 @@ public class MiniGameFlowController : MonoBehaviour
         Debug.Log("[MiniGameFlow] Flow stopped.");
         isRunning = false;
         waitingForNextLevelInput = false;
+        isTransitionRequested = false;
 
         CleanupCurrentMiniGame();
 
@@ -109,6 +110,7 @@ public class MiniGameFlowController : MonoBehaviour
     private void SpawnNextGame()
     {
         waitingForNextLevelInput = false;
+        isTransitionRequested = false;
 
         if (!isRunning || miniGameHost == null)
         {
@@ -170,7 +172,7 @@ public class MiniGameFlowController : MonoBehaviour
         {
             Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with WIN.");
             waitingForNextLevelInput = true;
-            hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe to next level");
+            hudController?.ShowLevelComplete("LEVEL CLEARED", "Press ↑ or ↓ to next level");
             return;
         }
 
@@ -186,38 +188,49 @@ public class MiniGameFlowController : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
         {
-            swipeStartPosition = Input.mousePosition;
+            RequestNextLevelTransition("keyboard arrow");
+        }
+    }
+
+    public void RequestNextLevelFromUpButton()
+    {
+        RequestNextLevelTransition("up button");
+    }
+
+    public void RequestNextLevelFromDownButton()
+    {
+        RequestNextLevelTransition("down button");
+    }
+
+    private void RequestNextLevelTransition(string inputSource)
+    {
+        if (!waitingForNextLevelInput || isTransitionRequested)
+        {
+            return;
         }
 
-        if (Input.GetMouseButtonUp(0))
-        {
-            Vector2 endPosition = Input.mousePosition;
-            float deltaX = endPosition.x - swipeStartPosition.x;
-            float deltaY = endPosition.y - swipeStartPosition.y;
-
-            bool isSwipe = Mathf.Abs(deltaX) > 80f || Mathf.Abs(deltaY) > 80f;
-            if (!isSwipe)
-            {
-                return;
-            }
-
-            Debug.Log($"[MiniGameFlow] Swipe detected. deltaX={deltaX:0.##}, deltaY={deltaY:0.##}. Moving to next level.");
-            waitingForNextLevelInput = false;
-            hudController?.HideLevelComplete();
-            GoToNextGame();
-        }
+        isTransitionRequested = true;
+        waitingForNextLevelInput = false;
+        Debug.Log($"[MiniGameFlow] Next level requested via {inputSource}. Starting transition.");
+        hudController?.HideLevelComplete();
+        GoToNextGame();
     }
 
     private void GoToNextGame()
     {
         if (swipeFeedController != null)
         {
-            swipeFeedController.PlaySwipeDownTransition(SpawnNextGame);
+            swipeFeedController.PlaySwipeDownTransition(() =>
+            {
+                isTransitionRequested = false;
+                SpawnNextGame();
+            });
         }
         else
         {
+            isTransitionRequested = false;
             SpawnNextGame();
         }
     }
