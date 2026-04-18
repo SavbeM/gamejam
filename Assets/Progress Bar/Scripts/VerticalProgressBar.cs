@@ -6,7 +6,7 @@ namespace MagicPigGames {
     public class VerticalProgressBar : ProgressBar {       
         protected override float SizeMin => rectTransform.sizeDelta.y * sizeMin; // Minimum size of the overlay bar.
         protected override float SizeMax => rectTransform.sizeDelta.y * sizeMax; // Maximum size of the overlay bar.
-        protected override float CurrentOverlaySize => overlayBar.sizeDelta.y; // Current size of the overlay bar.
+        
 
         protected override void SetBarValue(float value) 
         {

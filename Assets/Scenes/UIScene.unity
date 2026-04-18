@@ -1858,6 +1858,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   totalSessionTime: 45
   autoStartOnSceneLoad: 1
+  allowTapToRestart: 1
   flowController: {fileID: 1412860713}
   hudController: {fileID: 2030241297}
 --- !u!1 &1509568689
@@ -3472,12 +3473,13 @@ MonoBehaviour:
   miniGameTimerText: {fileID: 1517908740}
   procrastinationFill: {fileID: 0}
   procrastinationProgressBar: {fileID: 0}
-  procrastinationProgressBarPrefab: {fileID: 672752558859913028, guid: bd6b16ebae3e748678b90a25cb354102, type: 3}
+  procrastinationProgressBarPrefab: {fileID: 7076724674982368705, guid: 74c372ab4a74048c2b25fb473f18b017, type: 3}
   progressBarParent: {fileID: 2030241296}
   resultText: {fileID: 0}
   levelCompleteGroup: {fileID: 1509568691}
   levelCompleteTitleText: {fileID: 1861497194}
   levelCompleteHintText: {fileID: 962779295}
+  levelCompleteBackground: {fileID: 0}
 --- !u!1 &2055417298
 GameObject:
   m_ObjectHideFlags: 0
