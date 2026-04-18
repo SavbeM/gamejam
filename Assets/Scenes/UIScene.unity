@@ -3467,9 +3467,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameplayGroup: {fileID: 0}
   gameOverGroup: {fileID: 1509568691}
+  gameplayGroupPrefab: {fileID: 0}
   miniGameTitleText: {fileID: 1785663917}
   miniGameTimerText: {fileID: 1517908740}
-  procrastinationFill: {fileID: 999013259}
+  procrastinationFill: {fileID: 0}
+  procrastinationProgressBar: {fileID: 0}
+  procrastinationProgressBarPrefab: {fileID: 672752558859913028, guid: bd6b16ebae3e748678b90a25cb354102, type: 3}
+  progressBarParent: {fileID: 2030241296}
   resultText: {fileID: 0}
   levelCompleteGroup: {fileID: 1509568691}
   levelCompleteTitleText: {fileID: 1861497194}
