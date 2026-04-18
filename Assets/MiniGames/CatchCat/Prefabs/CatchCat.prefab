@@ -32,8 +32,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -100, y: 25}
-  m_SizeDelta: {x: -200, y: -150}
+  m_AnchoredPosition: {x: -100, y: -25}
+  m_SizeDelta: {x: -200, y: -50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &6076492171068221972
 GameObject:
@@ -96,8 +96,8 @@ MonoBehaviour:
   - {fileID: 8220584713625549334, guid: a086edfac0bdfe34ca69f28904a6c0fb, type: 3}
   tiredSprite: {fileID: -8823182831665122946, guid: 082b7f783d7152e4e968c2bccd7ae754, type: 3}
   totalCats: 5
-  needToWin: 4
-  catLifetime: 0.8
+  needToWin: 3
+  catLifetime: 1
 --- !u!1 &9180973146728987629
 GameObject:
   m_ObjectHideFlags: 0

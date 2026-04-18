@@ -10,7 +10,7 @@ public class TapTruthMiniGame : MiniGameBase
     private List<TapTruthQuestion> _remainingQuestions;
     private int _correctAnswers;
 
-    private const int AnswersToWin = 5;
+    private const int AnswersToWin = 3;
 
     public override void Begin()
     {

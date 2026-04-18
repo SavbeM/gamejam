@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a246f65115651452ca5c8e7687e2eb8b, type: 3}
+  m_Name: FocusLine
+  m_EditorClassIdentifier: 
+  gameId: FocusLine
+  displayName: FocusLine
+  GameRules: Stop the line in the center. Stay sharp and precise.
+  prefab: {fileID: 7985015207447445173, guid: 38d77753495bed2498ad3c782a0fa8e4, type: 3}
