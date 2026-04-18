@@ -57,13 +57,16 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0a1f267af61184a3d8c2e414ff228b12, type: 2}
   - {fileID: 11400000, guid: 26bb79f49aa5b4172a496098d25c60d8, type: 2}
   - {fileID: 11400000, guid: 59cd4cbdafda74035a90351293548df2, type: 2}
+  - {fileID: 11400000, guid: 626b00be36b944fa3a5b53a8fc856d20, type: 2}
+  - {fileID: 11400000, guid: 7d5fda6625904408dbb36149c739a0db, type: 2}
+  - {fileID: 11400000, guid: e7a50942379e54f8fa0e3b9bd66213be, type: 2}
   scrambledContainer: {fileID: 675825624463646037}
   answerContainer: {fileID: 2946727094119994159}
   letterTilePrefab: {fileID: 6184831894300950572, guid: fb60b262797b749418f42ba354367c13, type: 3}
   slotPrefab: {fileID: 7313182050368181078, guid: 3ffd009ce36ad4327947bdb55fb0fd55, type: 3}
-  tileSize: 80
+  tileSize: 70
   tileSpacing: 10
-  rowSpacing: 20
+  wordsToWin: 5
 --- !u!1 &7564146014851706694
 GameObject:
   m_ObjectHideFlags: 0
