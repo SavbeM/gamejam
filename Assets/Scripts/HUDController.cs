@@ -18,11 +18,12 @@ public class HUDController : MonoBehaviour
     [SerializeField] private CanvasGroup gameOverGroup;
     [SerializeField] private CanvasGroup gameplayGroupPrefab;
 
-    [Header("Top")]
+    [Header("Gameplay Info")]
     [SerializeField] private TMP_Text miniGameTitleText;
 
+    [SerializeField] private TMP_Text miniGameRulesText;
+
     [Header("Bottom progress")]
-    [SerializeField] private Image procrastinationFill;
     [SerializeField] private HorizontalProgressBar procrastinationProgressBar;
     [SerializeField] private HorizontalProgressBar procrastinationProgressBarPrefab;
     [SerializeField] private RectTransform bottomMetaGroup;
@@ -84,19 +85,24 @@ public class HUDController : MonoBehaviour
         miniGameTitleText.text = value ?? string.Empty;
     }
 
-    public void SetProgress(float normalized)
+    public void SetMiniGameRules(string value)
     {
-        if (procrastinationProgressBar != null)
-        {
-            procrastinationProgressBar.SetProgress(Mathf.Clamp01(normalized));
-        }
-
-        if (procrastinationFill == null)
+        if (miniGameRulesText == null)
         {
             return;
         }
 
-        procrastinationFill.fillAmount = Mathf.Clamp01(normalized);
+        miniGameRulesText.text = value ?? string.Empty;
+    }
+
+    public void SetProgress(float normalized)
+    {
+        normalized = Mathf.Clamp01(normalized);
+
+        if (procrastinationProgressBar != null)
+        {
+            procrastinationProgressBar.SetProgress(normalized);
+        }
     }
 
     public void PlayMiniGameResult(MiniGameResult result)
