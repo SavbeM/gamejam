@@ -145,7 +145,6 @@ public class MiniGameFlowController : MonoBehaviour
         {
             hudController.ShowGameplay();
             hudController.SetMiniGameTitle(currentEntry.displayName);
-            hudController.SetMiniGameTimer(currentEntry.timeLimit);
         }
 
         currentMiniGame.Setup(HandleMiniGameFinished);

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UnscrambleWordMiniGame : TimedMiniGameBase
+public class UnscrambleWordMiniGame : MiniGameBase
 {
     [Header("Data")]
     [SerializeField] private List<UnscrambleWordData> words = new();
@@ -47,19 +47,6 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
         answerSlots.Clear();
 
         base.Cleanup();
-    }
-
-    protected override void Update()
-    {
-        if (!IsRunning || IsFinished) return;
-        if (AllSlotsFilled()) return;
-
-        timeLeft -= Time.deltaTime;
-        if (timeLeft <= 0f)
-        {
-            timeLeft = 0f;
-            OnTimeExpired();
-        }
     }
 
     private void SpawnLetters()
@@ -131,11 +118,6 @@ public class UnscrambleWordMiniGame : TimedMiniGameBase
         foreach (var slot in answerSlots)
             if (!slot.HasLetter) return false;
         return true;
-    }
-
-    protected override void OnTimeExpired()
-    {
-        Finish(MiniGameResult.Fail);
     }
 
     private static void Shuffle(char[] arr)

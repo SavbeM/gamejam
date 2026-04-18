@@ -10,7 +10,6 @@ public class HUDController : MonoBehaviour
 
     [Header("Top")]
     [SerializeField] private TMP_Text miniGameTitleText;
-    [SerializeField] private TMP_Text miniGameTimerText;
 
     [Header("Bottom progress")]
     [SerializeField] private Image procrastinationFill;
@@ -46,14 +45,6 @@ public class HUDController : MonoBehaviour
             return;
 
         miniGameTitleText.text = value ?? string.Empty;
-    }
-
-    public void SetMiniGameTimer(float value)
-    {
-        if (miniGameTimerText == null)
-            return;
-
-        miniGameTimerText.text = $"{Mathf.Max(0f, value):0}s";
     }
 
     public void SetProgress(float normalized)
