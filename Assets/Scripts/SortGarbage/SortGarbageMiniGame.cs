@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SortGarbageMiniGame : TimedMiniGameBase
+public class SortGarbageMiniGame : MiniGameBase
 {
     [Header("Data")]
     [SerializeField] private List<SortGarbageItemData> items = new();
@@ -100,11 +100,6 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         }
 
         SpawnNewItem();
-    }
-
-    protected override void OnTimeExpired()
-    {
-        Finish(MiniGameResult.Fail);
     }
 
     private static void SetZoneAlpha(Image image, float alpha)
