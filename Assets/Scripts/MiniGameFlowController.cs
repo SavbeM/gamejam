@@ -14,25 +14,46 @@ public class MiniGameFlowController : MonoBehaviour
     private readonly Queue<MiniGameEntry> gameQueue = new();
     private GameObject currentInstance;
     private IMiniGame currentMiniGame;
+    private TimedMiniGameBase currentTimedMiniGame;
     private MiniGameEntry currentEntry;
     private bool isRunning;
     private bool waitingForNextLevelInput;
     private Vector2 swipeStartPosition;
 
-    private void Start()
+    private void Awake()
     {
-        StartFlow();
+        if (hudController == null)
+        {
+            hudController = FindFirstObjectByType<HUDController>();
+        }
+
+        if (swipeFeedController == null)
+        {
+            swipeFeedController = FindFirstObjectByType<SwipeFeedController>();
+        }
     }
 
     private void Update()
     {
+        if (!isRunning)
+        {
+            return;
+        }
+
+        if (hudController != null && currentTimedMiniGame != null)
+        {
+            hudController.SetMiniGameTimer(currentTimedMiniGame.TimeLeft);
+        }
+
         HandleNextLevelInput();
     }
 
     public void StartFlow()
     {
         if (isRunning)
+        {
             return;
+        }
 
         isRunning = true;
         BuildQueue();
@@ -40,6 +61,7 @@ public class MiniGameFlowController : MonoBehaviour
         if (gameQueue.Count == 0)
         {
             Debug.LogError("MiniGameFlowController: queue is empty.");
+            isRunning = false;
             return;
         }
 
@@ -51,21 +73,12 @@ public class MiniGameFlowController : MonoBehaviour
         isRunning = false;
         waitingForNextLevelInput = false;
 
-        if (currentMiniGame != null)
-        {
-            currentMiniGame.Cleanup();
-            currentMiniGame = null;
-        }
-
-        if (currentInstance != null)
-        {
-            Destroy(currentInstance);
-            currentInstance = null;
-        }
+        CleanupCurrentMiniGame();
 
         if (hudController != null)
         {
             hudController.HideLevelComplete();
+            hudController.SetMiniGameTimer(0f);
         }
     }
 
@@ -92,26 +105,12 @@ public class MiniGameFlowController : MonoBehaviour
     {
         waitingForNextLevelInput = false;
 
-        if (hudController != null)
-        {
-            hudController.HideLevelComplete();
-            hudController.SetMiniGameTitle(currentEntry != null ? currentEntry.displayName : string.Empty);
-        }
-
         if (!isRunning || miniGameHost == null)
+        {
             return;
-
-        if (currentMiniGame != null)
-        {
-            currentMiniGame.Cleanup();
-            currentMiniGame = null;
         }
 
-        if (currentInstance != null)
-        {
-            Destroy(currentInstance);
-            currentInstance = null;
-        }
+        CleanupCurrentMiniGame();
 
         if (gameQueue.Count == 0)
         {
@@ -126,22 +125,25 @@ public class MiniGameFlowController : MonoBehaviour
 
         currentEntry = gameQueue.Dequeue();
         currentInstance = Instantiate(currentEntry.prefab, miniGameHost);
-        currentMiniGame = currentInstance.GetComponent<IMiniGame>();
-
-        if (currentMiniGame == null)
-        {
-            currentMiniGame = currentInstance.GetComponentInChildren<IMiniGame>();
-        }
+        currentMiniGame = currentInstance.GetComponent<IMiniGame>() ?? currentInstance.GetComponentInChildren<IMiniGame>();
+        currentTimedMiniGame = currentInstance.GetComponent<TimedMiniGameBase>() ?? currentInstance.GetComponentInChildren<TimedMiniGameBase>();
 
         if (currentMiniGame == null)
         {
             Debug.LogError($"MiniGameFlowController: prefab '{currentEntry.prefab.name}' has no IMiniGame implementation.");
+            CleanupCurrentMiniGame();
             return;
+        }
+
+        if (currentTimedMiniGame != null)
+        {
+            currentTimedMiniGame.SetDuration(currentEntry.timeLimit);
         }
 
         if (hudController != null)
         {
             hudController.ShowGameplay();
+            hudController.HideLevelComplete();
             hudController.SetMiniGameTitle(currentEntry.displayName);
             hudController.SetMiniGameTimer(currentEntry.timeLimit);
         }
@@ -153,32 +155,27 @@ public class MiniGameFlowController : MonoBehaviour
     private void HandleMiniGameFinished(MiniGameResult result)
     {
         if (!isRunning)
+        {
             return;
+        }
 
         if (result == MiniGameResult.Win)
         {
             waitingForNextLevelInput = true;
-
-            if (hudController != null)
-            {
-                hudController.ShowLevelComplete("LEVEL CLEARED", "Swipe to next level");
-            }
-
+            hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe to next level");
             return;
         }
 
-        if (hudController != null)
-        {
-            hudController.PlayMiniGameResult(result);
-        }
-
+        hudController?.PlayMiniGameResult(result);
         GoToNextGame();
     }
 
     private void HandleNextLevelInput()
     {
         if (!waitingForNextLevelInput)
+        {
             return;
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -192,18 +189,14 @@ public class MiniGameFlowController : MonoBehaviour
             float deltaY = endPosition.y - swipeStartPosition.y;
 
             bool isSwipe = Mathf.Abs(deltaX) > 80f || Mathf.Abs(deltaY) > 80f;
-
-            if (isSwipe)
+            if (!isSwipe)
             {
-                waitingForNextLevelInput = false;
-
-                if (hudController != null)
-                {
-                    hudController.HideLevelComplete();
-                }
-
-                GoToNextGame();
+                return;
             }
+
+            waitingForNextLevelInput = false;
+            hudController?.HideLevelComplete();
+            GoToNextGame();
         }
     }
 
@@ -216,6 +209,24 @@ public class MiniGameFlowController : MonoBehaviour
         else
         {
             SpawnNextGame();
+        }
+    }
+
+    private void CleanupCurrentMiniGame()
+    {
+        if (currentMiniGame != null)
+        {
+            currentMiniGame.Cleanup();
+            currentMiniGame = null;
+        }
+
+        currentTimedMiniGame = null;
+        currentEntry = null;
+
+        if (currentInstance != null)
+        {
+            Destroy(currentInstance);
+            currentInstance = null;
         }
     }
 }

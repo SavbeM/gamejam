@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Session")]
     [SerializeField] private float totalSessionTime = 45f;
+    [SerializeField] private bool autoStartOnSceneLoad = true;
 
     [Header("Refs")]
     [SerializeField] private MiniGameFlowController flowController;
@@ -27,21 +28,40 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+
+        if (flowController == null)
+        {
+            flowController = FindFirstObjectByType<MiniGameFlowController>();
+        }
+
+        if (hudController == null)
+        {
+            hudController = FindFirstObjectByType<HUDController>();
+        }
     }
 
     private void Start()
     {
-        StartSession();
+        if (autoStartOnSceneLoad)
+        {
+            StartSession();
+        }
     }
 
     private void Update()
     {
-        if (!isGameActive) return;
+        if (!isGameActive)
+        {
+            return;
+        }
 
         remainingTime -= Time.deltaTime;
         remainingTime = Mathf.Max(remainingTime, 0f);
 
-        hudController.SetProgress(remainingTime / totalSessionTime);
+        if (hudController != null && totalSessionTime > 0f)
+        {
+            hudController.SetProgress(remainingTime / totalSessionTime);
+        }
 
         if (remainingTime <= 0f)
         {
@@ -51,19 +71,46 @@ public class GameManager : MonoBehaviour
 
     public void StartSession()
     {
+        if (isGameActive)
+        {
+            return;
+        }
+
+        if (flowController == null)
+        {
+            flowController = FindFirstObjectByType<MiniGameFlowController>();
+        }
+
+        if (hudController == null)
+        {
+            hudController = FindFirstObjectByType<HUDController>();
+        }
+
         remainingTime = totalSessionTime;
         isGameActive = true;
 
-        hudController.ShowGameplay();
-        flowController.StartFlow();
+        hudController?.ShowGameplay();
+        hudController?.SetProgress(1f);
+
+        if (flowController != null)
+        {
+            flowController.StartFlow();
+        }
+        else
+        {
+            Debug.LogError("GameManager: MiniGameFlowController is missing.");
+        }
     }
 
     public void EndSession()
     {
-        if (!isGameActive) return;
+        if (!isGameActive)
+        {
+            return;
+        }
 
         isGameActive = false;
-        flowController.StopFlow();
-        hudController.ShowGameOver();
+        flowController?.StopFlow();
+        hudController?.ShowGameOver();
     }
 }
