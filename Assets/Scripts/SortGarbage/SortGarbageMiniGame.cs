@@ -26,6 +26,7 @@ public class SortGarbageMiniGame : MiniGameBase
     public override void Setup(System.Action<MiniGameResult> onFinished)
     {
         base.Setup(onFinished);
+        Debug.Log("[SortGarbage] Setup started.");
 
         if (items == null || items.Count == 0)
         {
@@ -67,6 +68,8 @@ public class SortGarbageMiniGame : MiniGameBase
             itemView.Swiped -= HandleSwiped;
             itemView.Swiped += HandleSwiped;
         }
+
+        Debug.Log($"[SortGarbage] New item spawned: {currentItem.DisplayName}.");
     }
 
     private void HandleSwiped(SortCategory selectedCategory)
@@ -74,6 +77,7 @@ public class SortGarbageMiniGame : MiniGameBase
         if (!IsRunning || IsFinished || currentItem == null)
             return;
 
+        Debug.Log($"[SortGarbage] Swipe input received. Selected={selectedCategory}, Expected={currentItem.CorrectCategory}.");
         bool isCorrect = selectedCategory == currentItem.CorrectCategory;
 
         if (selectedCategory == SortCategory.Inedible)
