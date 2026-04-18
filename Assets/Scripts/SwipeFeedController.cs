@@ -2,59 +2,74 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+public enum SwipeTransitionDirection
+{
+    Up,
+    Down
+}
+
 public class SwipeFeedController : MonoBehaviour
 {
     [SerializeField] private RectTransform feedRoot;
     [SerializeField] private float swipeDistance = 1400f;
-    [SerializeField] private float swipeDuration = 0.25f;
+    [SerializeField] private float swipeDuration = 0.3f;
+    [SerializeField] private AnimationCurve swipeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     private Vector2 initialPosition;
+    private Coroutine swipeCoroutine;
     private bool isAnimating;
+    public bool IsAnimating => isAnimating;
+    public float SwipeDistance => swipeDistance;
 
     private void Awake()
     {
-        initialPosition = feedRoot.anchoredPosition;
+        if (feedRoot != null)
+        {
+            initialPosition = feedRoot.anchoredPosition;
+        }
     }
 
-    public void PlaySwipeDownTransition(Action onComplete)
+    public void PlaySwipeTransition(SwipeTransitionDirection direction, Action onComplete)
     {
-        if (isAnimating)
+        if (feedRoot == null)
         {
-            Debug.LogWarning("[SwipeFeed] Swipe transition request ignored because animation is in progress.");
+            Debug.LogWarning("[SwipeFeed] Feed root is missing, transition is skipped.");
+            onComplete?.Invoke();
             return;
         }
 
-        Debug.Log("[SwipeFeed] Swipe transition started.");
-        StartCoroutine(AnimateSwipe(onComplete));
+        if (swipeCoroutine != null)
+        {
+            StopCoroutine(swipeCoroutine);
+        }
+
+        Debug.Log($"[SwipeFeed] Swipe transition started. Direction: {direction}.");
+        swipeCoroutine = StartCoroutine(AnimateSwipe(direction, onComplete));
     }
 
-    private IEnumerator AnimateSwipe(Action onComplete)
+    private IEnumerator AnimateSwipe(SwipeTransitionDirection direction, Action onComplete)
     {
         isAnimating = true;
+        initialPosition = feedRoot.anchoredPosition;
 
         Vector2 start = initialPosition;
-        Vector2 end = initialPosition + Vector2.down * swipeDistance;
+        Vector2 offset = direction == SwipeTransitionDirection.Up ? Vector2.up : Vector2.down;
+        Vector2 end = initialPosition + offset * swipeDistance;
 
         float time = 0f;
         while (time < swipeDuration)
         {
             time += Time.deltaTime;
             float t = Mathf.Clamp01(time / swipeDuration);
-            t = EaseInOutCubic(t);
+            t = swipeCurve.Evaluate(t);
             feedRoot.anchoredPosition = Vector2.LerpUnclamped(start, end, t);
             yield return null;
         }
 
         feedRoot.anchoredPosition = initialPosition;
         isAnimating = false;
+        swipeCoroutine = null;
         Debug.Log("[SwipeFeed] Swipe transition finished.");
         onComplete?.Invoke();
-    }
-
-    private float EaseInOutCubic(float t)
-    {
-        return t < 0.5f
-            ? 4f * t * t * t
-            : 1f - Mathf.Pow(-2f * t + 2f, 3f) / 2f;
     }
 }
