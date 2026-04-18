@@ -36,14 +36,22 @@ public class HUDController : MonoBehaviour
 
     public void ShowGameOver()
     {
-        SetGroup(gameplayGroup, false);
-        SetGroup(gameOverGroup, true);
+        if (gameOverGroup != null)
+        {
+            SetGroup(gameplayGroup, false);
+            SetGroup(gameOverGroup, true);
+            return;
+        }
+
+        ShowLevelComplete("GAME OVER", "Session finished");
     }
 
     public void SetMiniGameTitle(string value)
     {
         if (miniGameTitleText == null)
+        {
             return;
+        }
 
         miniGameTitleText.text = value ?? string.Empty;
     }
@@ -51,7 +59,9 @@ public class HUDController : MonoBehaviour
     public void SetMiniGameTimer(float value)
     {
         if (miniGameTimerText == null)
+        {
             return;
+        }
 
         miniGameTimerText.text = $"{Mathf.Max(0f, value):0}s";
     }
@@ -59,7 +69,9 @@ public class HUDController : MonoBehaviour
     public void SetProgress(float normalized)
     {
         if (procrastinationFill == null)
+        {
             return;
+        }
 
         procrastinationFill.fillAmount = Mathf.Clamp01(normalized);
     }
@@ -67,7 +79,9 @@ public class HUDController : MonoBehaviour
     public void PlayMiniGameResult(MiniGameResult result)
     {
         if (resultText == null)
+        {
             return;
+        }
 
         resultText.text = result == MiniGameResult.Win ? "DONE" : "MISSED";
     }
@@ -75,10 +89,14 @@ public class HUDController : MonoBehaviour
     public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Swipe to next level")
     {
         if (levelCompleteTitleText != null)
+        {
             levelCompleteTitleText.text = title;
+        }
 
         if (levelCompleteHintText != null)
+        {
             levelCompleteHintText.text = hint;
+        }
 
         SetGroup(levelCompleteGroup, true);
     }
@@ -88,10 +106,12 @@ public class HUDController : MonoBehaviour
         SetGroup(levelCompleteGroup, false);
     }
 
-    private void SetGroup(CanvasGroup group, bool visible)
+    private static void SetGroup(CanvasGroup group, bool visible)
     {
         if (group == null)
+        {
             return;
+        }
 
         group.alpha = visible ? 1f : 0f;
         group.interactable = visible;
