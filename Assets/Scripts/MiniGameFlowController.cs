@@ -23,6 +23,7 @@ public class MiniGameFlowController : MonoBehaviour
     private GameObject currentInstance;
     private IMiniGame currentMiniGame;
     private MiniGameEntry currentEntry;
+
     private bool isRunning;
     private bool waitingForNextLevelInput;
     private bool isTransitionRequested;
@@ -80,7 +81,6 @@ public class MiniGameFlowController : MonoBehaviour
         nextLevelSwipeStarted = false;
 
         SpawnNextGame();
-        Debug.Log("[MiniGameFlow] Flow started.");
     }
 
     public void StopFlow()
@@ -92,8 +92,6 @@ public class MiniGameFlowController : MonoBehaviour
 
         CleanupCurrentMiniGame();
         hudController?.HideLevelComplete();
-
-        Debug.Log("[MiniGameFlow] Flow stopped.");
     }
 
     private void BuildQueue()
@@ -134,12 +132,8 @@ public class MiniGameFlowController : MonoBehaviour
 
         if (gameQueue.Count == 0)
         {
-            BuildQueue();
-        }
-
-        if (gameQueue.Count == 0)
-        {
-            Debug.LogError("[MiniGameFlow] No games to spawn.");
+            isRunning = false;
+            GameManager.Instance?.CompleteGameSuccessfully();
             return;
         }
 
@@ -157,10 +151,7 @@ public class MiniGameFlowController : MonoBehaviour
         hudController?.ShowGameplay();
         hudController?.HideLevelComplete();
         hudController?.SetMiniGameTitle(currentEntry.displayName);
-        hudController?.SetMiniGameRules(currentEntry.GameRules);
-
-        currentMiniGame.Setup(HandleMiniGameFinished);
-        currentMiniGame.Begin();
+        hudController?.SetMiniGameRules(currentEntry.gameRules);
 
         if (globalProgressTimer != null)
         {
@@ -174,7 +165,8 @@ public class MiniGameFlowController : MonoBehaviour
             }
         }
 
-        Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry.displayName}' started.");
+        currentMiniGame.Setup(HandleMiniGameFinished);
+        currentMiniGame.Begin();
     }
 
     private void HandleMiniGameFinished(MiniGameResult result)
@@ -184,25 +176,16 @@ public class MiniGameFlowController : MonoBehaviour
             return;
         }
 
-
-
-        if (globalProgressTimer != null)
-        {
-            globalProgressTimer.StartTimer();
-        }
+        globalProgressTimer?.StartTimer();
 
         if (result == MiniGameResult.Win)
         {
-            Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with WIN.");
-
             globalProgressTimer?.AddTime(rewardTimeOnWin);
 
             waitingForNextLevelInput = true;
             hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe ↑/↓ or press ↑/↓ to next level");
             return;
         }
-
-        Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with result: {result}.");
 
         if (result == MiniGameResult.Fail && penaltyTimeOnFail > 0f)
         {
@@ -325,9 +308,7 @@ public class MiniGameFlowController : MonoBehaviour
         isTransitionRequested = true;
         waitingForNextLevelInput = false;
 
-        Debug.Log($"[MiniGameFlow] Next level requested via {inputSource}.");
         hudController?.HideLevelComplete();
-
         GoToNextGame();
     }
 

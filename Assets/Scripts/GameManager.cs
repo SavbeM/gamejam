@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,12 +9,17 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool autoStartOnSceneLoad = true;
     [SerializeField] private bool allowTapToRestart = true;
 
+    [Header("Ending Scenes")]
+    [SerializeField] private string goodEndingSceneName = "GoodEnding";
+    [SerializeField] private string badEndingSceneName = "BadEnding";
+
     [Header("Refs")]
     [SerializeField] private MiniGameFlowController flowController;
     [SerializeField] private HUDController hudController;
     [SerializeField] private GlobalProgressTimer globalProgressTimer;
 
     private bool isGameActive;
+    private bool isEndingTriggered;
 
     public bool IsGameActive => isGameActive;
 
@@ -46,8 +52,6 @@ public class GameManager : MonoBehaviour
         {
             globalProgressTimer.TimerEmptied += HandleTimerEmptied;
         }
-
-        Debug.Log("[GameManager] Awake completed.");
     }
 
     private void OnDestroy()
@@ -88,9 +92,10 @@ public class GameManager : MonoBehaviour
     {
         if (isGameActive)
         {
-            Debug.LogWarning("[GameManager] StartSession called while already active.");
             return;
         }
+
+        isEndingTriggered = false;
 
         if (flowController == null)
         {
@@ -120,62 +125,67 @@ public class GameManager : MonoBehaviour
 
         globalProgressTimer.ResetTimer(startImmediately: true);
         flowController.StartFlow();
-
-        Debug.Log("[GameManager] Session started.");
     }
 
-    public void EndSessionAsFinished()
+    public void CompleteGameSuccessfully()
     {
-        if (!isGameActive)
+        if (!isGameActive || isEndingTriggered)
         {
             return;
         }
 
+        isEndingTriggered = true;
         isGameActive = false;
 
         flowController?.StopFlow();
         globalProgressTimer?.StopTimer();
-        hudController?.ShowGameFinished();
 
-        Debug.Log("[GameManager] Session finished.");
+        if (!string.IsNullOrWhiteSpace(goodEndingSceneName))
+        {
+            SceneManager.LoadScene(goodEndingSceneName);
+        }
+        else
+        {
+            Debug.LogError("[GameManager] Good ending scene name is empty.");
+        }
     }
 
     public void EndSessionAsGameOver()
     {
-        if (!isGameActive)
+        if (!isGameActive || isEndingTriggered)
         {
             return;
         }
 
+        isEndingTriggered = true;
         isGameActive = false;
 
         flowController?.StopFlow();
         globalProgressTimer?.StopTimer();
-        hudController?.ShowGameOver();
 
-        Debug.Log("[GameManager] Session ended with game over.");
+        if (!string.IsNullOrWhiteSpace(badEndingSceneName))
+        {
+            SceneManager.LoadScene(badEndingSceneName);
+        }
+        else
+        {
+            Debug.LogError("[GameManager] Bad ending scene name is empty.");
+        }
     }
 
     public void RestartSession()
     {
-        Debug.Log("[GameManager] Restarting session.");
-
-        isGameActive = false;
-
         flowController?.StopFlow();
         globalProgressTimer?.StopTimer();
+
+        isGameActive = false;
+        isEndingTriggered = false;
 
         StartSession();
     }
 
     private void HandleTimerEmptied()
     {
-        if (!isGameActive)
-        {
-            return;
-        }
-
-        Debug.Log("[GameManager] Global timer reached zero.");
         EndSessionAsGameOver();
     }
 }
