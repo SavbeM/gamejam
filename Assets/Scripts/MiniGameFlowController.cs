@@ -17,6 +17,7 @@ public class MiniGameFlowController : MonoBehaviour
     private MiniGameEntry currentEntry;
     private bool isRunning;
     private bool waitingForNextLevelInput;
+    private bool nextLevelSwipeStarted;
     private Vector2 swipeStartPosition;
 
     private void Start()
@@ -50,6 +51,7 @@ public class MiniGameFlowController : MonoBehaviour
     {
         isRunning = false;
         waitingForNextLevelInput = false;
+        nextLevelSwipeStarted = false;
 
         if (currentMiniGame != null)
         {
@@ -91,11 +93,11 @@ public class MiniGameFlowController : MonoBehaviour
     private void SpawnNextGame()
     {
         waitingForNextLevelInput = false;
+        nextLevelSwipeStarted = false;
 
         if (hudController != null)
         {
             hudController.HideLevelComplete();
-            hudController.SetMiniGameTitle(currentEntry != null ? currentEntry.displayName : string.Empty);
         }
 
         if (!isRunning || miniGameHost == null)
@@ -158,6 +160,7 @@ public class MiniGameFlowController : MonoBehaviour
         if (result == MiniGameResult.Win)
         {
             waitingForNextLevelInput = true;
+            nextLevelSwipeStarted = false;
 
             if (hudController != null)
             {
@@ -166,13 +169,6 @@ public class MiniGameFlowController : MonoBehaviour
 
             return;
         }
-
-        if (hudController != null)
-        {
-            hudController.PlayMiniGameResult(result);
-        }
-
-        GoToNextGame();
     }
 
     private void HandleNextLevelInput()
@@ -182,8 +178,12 @@ public class MiniGameFlowController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            nextLevelSwipeStarted = true;
             swipeStartPosition = Input.mousePosition;
         }
+
+        if (!nextLevelSwipeStarted)
+            return;
 
         if (Input.GetMouseButtonUp(0))
         {
@@ -193,17 +193,18 @@ public class MiniGameFlowController : MonoBehaviour
 
             bool isSwipe = Mathf.Abs(deltaX) > 80f || Mathf.Abs(deltaY) > 80f;
 
-            if (isSwipe)
+            if (!isSwipe)
+                return;
+
+            waitingForNextLevelInput = false;
+            nextLevelSwipeStarted = false;
+
+            if (hudController != null)
             {
-                waitingForNextLevelInput = false;
-
-                if (hudController != null)
-                {
-                    hudController.HideLevelComplete();
-                }
-
-                GoToNextGame();
+                hudController.HideLevelComplete();
             }
+
+            GoToNextGame();
         }
     }
 

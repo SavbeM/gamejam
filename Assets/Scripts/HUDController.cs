@@ -74,11 +74,23 @@ public class HUDController : MonoBehaviour
 
     public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Swipe to next level")
     {
+        Debug.Log("ShowLevelComplete called");
+
         if (levelCompleteTitleText != null)
             levelCompleteTitleText.text = title;
+        else
+            Debug.LogError("levelCompleteTitleText is NULL");
 
         if (levelCompleteHintText != null)
             levelCompleteHintText.text = hint;
+        else
+            Debug.LogError("levelCompleteHintText is NULL");
+
+        if (levelCompleteGroup == null)
+        {
+            Debug.LogError("levelCompleteGroup is NULL");
+            return;
+        }
 
         SetGroup(levelCompleteGroup, true);
     }
@@ -96,5 +108,7 @@ public class HUDController : MonoBehaviour
         group.alpha = visible ? 1f : 0f;
         group.interactable = visible;
         group.blocksRaycasts = visible;
+
+        Debug.Log($"SetGroup: {(visible ? "Showing" : "Hiding")} {group.alpha} {group.name}");
     }
 }
