@@ -5,6 +5,14 @@ using UnityEngine.UI;
 
 public class HUDController : MonoBehaviour
 {
+    private enum OverlayStage
+    {
+        Hidden,
+        LevelComplete,
+        GameOver,
+        GameFinished
+    }
+
     [Header("Main HUD")]
     [SerializeField] private CanvasGroup gameplayGroup;
     [SerializeField] private CanvasGroup gameOverGroup;
@@ -25,10 +33,12 @@ public class HUDController : MonoBehaviour
     [SerializeField] private CanvasGroup levelCompleteGroup;
     [SerializeField] private TMP_Text levelCompleteTitleText;
     [SerializeField] private TMP_Text levelCompleteHintText;
+    [SerializeField] private Image levelCompleteBackground;
 
     private void Awake()
     {
         EnsureGameplayGroupFromOverlayUI();
+        EnsureOverlayDependencies();
         EnsureProgressBar();
         HideLevelComplete();
     }
@@ -36,7 +46,7 @@ public class HUDController : MonoBehaviour
     public void ShowGameplay()
     {
         SetGroup(gameplayGroup, true);
-        SetGroup(gameOverGroup, false);
+        ApplyOverlayStage(OverlayStage.Hidden);
     }
 
     public void ShowGameOver()
@@ -45,11 +55,15 @@ public class HUDController : MonoBehaviour
         {
             SetGroup(gameplayGroup, false);
             SetGroup(gameOverGroup, true);
-            ShowLevelComplete("GAME OVER", "Tap anywhere to restart");
-            return;
         }
 
-        ShowLevelComplete("GAME OVER", "Tap anywhere to restart");
+        ApplyOverlayStage(OverlayStage.GameOver);
+    }
+
+    public void ShowGameFinished()
+    {
+        SetGroup(gameplayGroup, false);
+        ApplyOverlayStage(OverlayStage.GameFinished);
     }
 
     public void SetMiniGameTitle(string value)
@@ -99,22 +113,12 @@ public class HUDController : MonoBehaviour
 
     public void ShowLevelComplete(string title = "LEVEL CLEARED", string hint = "Swipe to next level")
     {
-        if (levelCompleteTitleText != null)
-        {
-            levelCompleteTitleText.text = title;
-        }
-
-        if (levelCompleteHintText != null)
-        {
-            levelCompleteHintText.text = hint;
-        }
-
-        SetGroup(levelCompleteGroup, true);
+        ApplyOverlayStage(OverlayStage.LevelComplete, title, hint);
     }
 
     public void HideLevelComplete()
     {
-        SetGroup(levelCompleteGroup, false);
+        ApplyOverlayStage(OverlayStage.Hidden);
     }
 
     private void EnsureGameplayGroupFromOverlayUI()
@@ -176,6 +180,59 @@ public class HUDController : MonoBehaviour
         }
     }
 
+    private void EnsureOverlayDependencies()
+    {
+        RectTransform overlayTransform = transform as RectTransform;
+        if (overlayTransform == null)
+        {
+            return;
+        }
+
+        if (levelCompleteGroup == null)
+        {
+            Transform levelOverlay = overlayTransform.Find("LevelCompleteOverlay");
+            if (levelOverlay != null)
+            {
+                levelCompleteGroup = levelOverlay.GetComponent<CanvasGroup>();
+            }
+        }
+
+        if (levelCompleteGroup == null)
+        {
+            return;
+        }
+
+        if (gameOverGroup == null)
+        {
+            gameOverGroup = levelCompleteGroup;
+        }
+
+        if (levelCompleteBackground == null)
+        {
+            levelCompleteBackground = levelCompleteGroup.GetComponent<Image>();
+        }
+
+        if (levelCompleteTitleText == null)
+        {
+            levelCompleteTitleText = levelCompleteGroup.GetComponentInChildren<TMP_Text>(true);
+        }
+
+        if (levelCompleteHintText == null)
+        {
+            TMP_Text[] allTexts = levelCompleteGroup.GetComponentsInChildren<TMP_Text>(true);
+            foreach (TMP_Text textComponent in allTexts)
+            {
+                if (textComponent == levelCompleteTitleText)
+                {
+                    continue;
+                }
+
+                levelCompleteHintText = textComponent;
+                break;
+            }
+        }
+    }
+
     private void EnsureProgressBar()
     {
         if (procrastinationProgressBar != null)
@@ -186,11 +243,8 @@ public class HUDController : MonoBehaviour
         RectTransform parent = progressBarParent;
         if (parent == null)
         {
-            Transform topBar = transform.Find("GameplayGroup/TopBar") ?? transform.Find("TopBar");
-            if (topBar != null)
-            {
-                parent = topBar as RectTransform;
-            }
+            Transform fallbackParent = transform.Find("GameplayGroup") ?? transform;
+            parent = fallbackParent as RectTransform;
         }
 
         if (parent == null)
@@ -198,13 +252,15 @@ public class HUDController : MonoBehaviour
             return;
         }
 
+        RectTransform topBarRect = (transform.Find("GameplayGroup/TopBar") ?? transform.Find("TopBar")) as RectTransform;
+
         GameObject root = new("ProcrastinationProgressBar", typeof(RectTransform), typeof(Image), typeof(HorizontalProgressBar));
         RectTransform rootRect = root.GetComponent<RectTransform>();
         rootRect.SetParent(parent, false);
         rootRect.anchorMin = new Vector2(0.5f, 1f);
         rootRect.anchorMax = new Vector2(0.5f, 1f);
         rootRect.pivot = new Vector2(0.5f, 1f);
-        rootRect.anchoredPosition = new Vector2(0f, -84f);
+        rootRect.anchoredPosition = new Vector2(0f, CalculateProgressBarYOffset(parent, topBarRect));
         rootRect.sizeDelta = new Vector2(480f, 22f);
 
         Image rootImage = root.GetComponent<Image>();
@@ -231,6 +287,73 @@ public class HUDController : MonoBehaviour
         procrastinationProgressBar.sizeMax = 1f;
         procrastinationProgressBar.invertProgress = true;
         procrastinationProgressBar.transitionTime = 0.15f;
+    }
+
+    private float CalculateProgressBarYOffset(RectTransform parent, RectTransform topBarRect)
+    {
+        const float defaultOffset = -112f;
+        const float extraSpacing = 18f;
+
+        if (topBarRect == null || parent == null)
+        {
+            return defaultOffset;
+        }
+
+        Vector3[] corners = new Vector3[4];
+        topBarRect.GetWorldCorners(corners);
+        Vector3 bottomCenter = (corners[0] + corners[3]) * 0.5f;
+        Vector3 localBottomCenter = parent.InverseTransformPoint(bottomCenter);
+        return localBottomCenter.y - extraSpacing;
+    }
+
+    private void ApplyOverlayStage(OverlayStage stage, string title = null, string hint = null)
+    {
+        if (stage == OverlayStage.Hidden)
+        {
+            SetGroup(levelCompleteGroup, false);
+            return;
+        }
+
+        EnsureOverlayDependencies();
+        SetGroup(levelCompleteGroup, true);
+
+        string resolvedTitle = title;
+        string resolvedHint = hint;
+        Color backgroundColor = new Color(0f, 0f, 0f, 0.68f);
+
+        switch (stage)
+        {
+            case OverlayStage.LevelComplete:
+                resolvedTitle ??= "LEVEL CLEARED";
+                resolvedHint ??= "Swipe to next level";
+                backgroundColor = new Color(0.04f, 0.12f, 0.2f, 0.72f);
+                break;
+            case OverlayStage.GameOver:
+                resolvedTitle ??= "GAME OVER";
+                resolvedHint ??= "Tap anywhere to restart";
+                backgroundColor = new Color(0.2f, 0.05f, 0.07f, 0.75f);
+                break;
+            case OverlayStage.GameFinished:
+                resolvedTitle ??= "GAME FINISHED";
+                resolvedHint ??= "Tap anywhere to play again";
+                backgroundColor = new Color(0.05f, 0.15f, 0.08f, 0.75f);
+                break;
+        }
+
+        if (levelCompleteTitleText != null)
+        {
+            levelCompleteTitleText.text = resolvedTitle;
+        }
+
+        if (levelCompleteHintText != null)
+        {
+            levelCompleteHintText.text = resolvedHint;
+        }
+
+        if (levelCompleteBackground != null)
+        {
+            levelCompleteBackground.color = backgroundColor;
+        }
     }
 
     private static void SetGroup(CanvasGroup group, bool visible)

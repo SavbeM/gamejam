@@ -125,7 +125,7 @@ public class GameManager : MonoBehaviour
         isGameActive = false;
         Debug.Log("[GameManager] Session ended.");
         flowController?.StopFlow();
-        hudController?.ShowGameOver();
+        hudController?.ShowGameFinished();
     }
 
     public void RestartSession()
