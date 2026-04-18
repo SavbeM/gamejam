@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,20 +12,23 @@ public class MiniGameFlowController : MonoBehaviour
     [SerializeField] private SwipeFeedController swipeFeedController;
     [SerializeField] private HUDController hudController;
 
-    [Header("Next Level Input")]
-    [SerializeField] private float nextLevelSwipeThresholdPixels = 160f;
-    [SerializeField] private float nextLevelSwipeMaxHorizontalRatio = 0.75f;
+    [Header("Swipe Input")]
+    [SerializeField] private float swipeThresholdPixels = 140f;
+    [SerializeField] private float swipeMaxHorizontalRatio = 0.75f;
 
-    private readonly Queue<MiniGameEntry> gameQueue = new();
+    private readonly List<MiniGameEntry> gameEntries = new();
+    private int currentIndex;
+
+    private GameObject previousInstance;
     private GameObject currentInstance;
+    private GameObject nextInstance;
     private IMiniGame currentMiniGame;
     private TimedMiniGameBase currentTimedMiniGame;
     private MiniGameEntry currentEntry;
     private bool isRunning;
-    private bool waitingForNextLevelInput;
     private bool isTransitionRequested;
-    private bool nextLevelSwipeStarted;
-    private Vector2 swipeStartPosition;
+    private bool swipeStarted;
+    private Vector2 swipeStartScreenPosition;
 
     private void Awake()
     {
@@ -46,7 +50,7 @@ public class MiniGameFlowController : MonoBehaviour
             return;
         }
 
-        HandleNextLevelInput();
+        HandleSwipeInput();
     }
 
     public void StartFlow()
@@ -58,28 +62,28 @@ public class MiniGameFlowController : MonoBehaviour
         }
 
         isRunning = true;
+        currentIndex = 0;
         Debug.Log("[MiniGameFlow] Flow started.");
-        BuildQueue();
+        BuildGameEntryList();
 
-        if (gameQueue.Count == 0)
+        if (gameEntries.Count == 0)
         {
-            Debug.LogError("MiniGameFlowController: queue is empty.");
+            Debug.LogError("MiniGameFlowController: valid game list is empty.");
             isRunning = false;
             return;
         }
 
-        SpawnNextGame();
+        RebuildVisibleGames();
     }
 
     public void StopFlow()
     {
         Debug.Log("[MiniGameFlow] Flow stopped.");
         isRunning = false;
-        waitingForNextLevelInput = false;
         isTransitionRequested = false;
-        nextLevelSwipeStarted = false;
+        swipeStarted = false;
 
-        CleanupCurrentMiniGame();
+        CleanupAllVisibleGames();
 
         if (hudController != null)
         {
@@ -87,9 +91,9 @@ public class MiniGameFlowController : MonoBehaviour
         }
     }
 
-    private void BuildQueue()
+    private void BuildGameEntryList()
     {
-        gameQueue.Clear();
+        gameEntries.Clear();
 
         if (playlist == null || playlist.games == null || playlist.games.Count == 0)
         {
@@ -101,52 +105,56 @@ public class MiniGameFlowController : MonoBehaviour
         {
             if (entry != null && entry.prefab != null)
             {
-                gameQueue.Enqueue(entry);
+                gameEntries.Add(entry);
             }
         }
 
-        Debug.Log($"[MiniGameFlow] Queue rebuilt. Entries: {gameQueue.Count}.");
+        Debug.Log($"[MiniGameFlow] Entry list rebuilt. Entries: {gameEntries.Count}.");
     }
 
-    private void SpawnNextGame()
+    private void RebuildVisibleGames()
     {
-        waitingForNextLevelInput = false;
         isTransitionRequested = false;
-        nextLevelSwipeStarted = false;
+        swipeStarted = false;
 
         if (hudController != null)
         {
             hudController.HideLevelComplete();
         }
 
-        if (!isRunning || miniGameHost == null)
+        if (!isRunning || miniGameHost == null || gameEntries.Count == 0)
         {
             return;
         }
 
-        CleanupCurrentMiniGame();
+        CleanupAllVisibleGames();
+        SpawnSlotInstances();
+    }
 
-        if (gameQueue.Count == 0)
-        {
-            BuildQueue();
-        }
+    private void SpawnSlotInstances()
+    {
+        int previousIndex = WrapIndex(currentIndex - 1);
+        int nextIndex = WrapIndex(currentIndex + 1);
 
-        if (gameQueue.Count == 0)
+        float slotOffset = swipeFeedController != null ? swipeFeedController.SwipeDistance : 1400f;
+        previousInstance = SpawnGameInstance(previousIndex, slotOffset);
+        currentInstance = SpawnGameInstance(currentIndex, 0f);
+        nextInstance = SpawnGameInstance(nextIndex, -slotOffset);
+
+        if (currentInstance == null)
         {
-            Debug.LogError("MiniGameFlowController: no games to spawn.");
+            Debug.LogError("[MiniGameFlow] Failed to spawn current game instance.");
             return;
         }
 
-        currentEntry = gameQueue.Dequeue();
-        Debug.Log($"[MiniGameFlow] Spawning mini-game '{currentEntry.displayName}'.");
-        currentInstance = Instantiate(currentEntry.prefab, miniGameHost);
+        currentEntry = gameEntries[currentIndex];
         currentMiniGame = currentInstance.GetComponent<IMiniGame>() ?? currentInstance.GetComponentInChildren<IMiniGame>();
         currentTimedMiniGame = currentInstance.GetComponent<TimedMiniGameBase>() ?? currentInstance.GetComponentInChildren<TimedMiniGameBase>();
 
         if (currentMiniGame == null)
         {
             Debug.LogError($"MiniGameFlowController: prefab '{currentEntry.prefab.name}' has no IMiniGame implementation.");
-            CleanupCurrentMiniGame();
+            CleanupAllVisibleGames();
             return;
         }
 
@@ -155,87 +163,94 @@ public class MiniGameFlowController : MonoBehaviour
             currentTimedMiniGame.SetDuration(currentEntry.timeLimit);
         }
 
-        if (hudController != null)
-        {
-            hudController.ShowGameplay();
-            hudController.HideLevelComplete();
-            hudController.SetMiniGameTitle(currentEntry.displayName);
-        }
-
         currentMiniGame.Setup(HandleMiniGameFinished);
         currentMiniGame.Begin();
-        Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry.displayName}' started.");
+
+        hudController?.ShowGameplay();
+        hudController?.SetMiniGameTitle(currentEntry.displayName);
+        Debug.Log($"[MiniGameFlow] Active mini-game is '{currentEntry.displayName}'. Prev and next are pre-rendered.");
+    }
+
+    private GameObject SpawnGameInstance(int gameIndex, float anchoredY)
+    {
+        MiniGameEntry entry = gameEntries[gameIndex];
+        Debug.Log($"[MiniGameFlow] Spawning slot instance '{entry.displayName}' at y={anchoredY:0.##}.");
+        GameObject instance = Instantiate(entry.prefab, miniGameHost);
+
+        RectTransform rectTransform = instance.GetComponent<RectTransform>() ?? instance.GetComponentInChildren<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, anchoredY);
+        }
+        else
+        {
+            Vector3 localPosition = instance.transform.localPosition;
+            instance.transform.localPosition = new Vector3(localPosition.x, anchoredY, localPosition.z);
+        }
+
+        return instance;
     }
 
     private void HandleMiniGameFinished(MiniGameResult result)
     {
-        if (!isRunning)
+        if (!isRunning || isTransitionRequested)
         {
-            return;
-        }
-
-        if (result == MiniGameResult.Win)
-        {
-            Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with WIN.");
-            waitingForNextLevelInput = true;
-            hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe ↑/↓ or press ↑/↓ to next level");
             return;
         }
 
         Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with result: {result}.");
         hudController?.PlayMiniGameResult(result);
-        GoToNextGame();
+        RequestSwipeTransition(+1, "mini-game finished");
     }
 
-    private void HandleNextLevelInput()
+    private void HandleSwipeInput()
     {
-        if (!waitingForNextLevelInput)
+        if (isTransitionRequested)
         {
+            swipeStarted = false;
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            RequestNextLevelTransition("keyboard arrow");
+            RequestSwipeTransition(+1, "up arrow");
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            RequestSwipeTransition(-1, "down arrow");
         }
 
-        if (TryConsumeNextLevelSwipe(out string swipeSource))
+        if (TryConsumeSwipe(out int swipeStep, out string swipeSource))
         {
-            RequestNextLevelTransition(swipeSource);
+            RequestSwipeTransition(swipeStep, swipeSource);
         }
     }
 
-    private bool TryConsumeNextLevelSwipe(out string inputSource)
+    private bool TryConsumeSwipe(out int swipeStep, out string inputSource)
     {
+        swipeStep = 0;
         inputSource = null;
-
-        if (isTransitionRequested)
-        {
-            nextLevelSwipeStarted = false;
-            return false;
-        }
 
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
-
             if (touch.phase == TouchPhase.Began)
             {
-                nextLevelSwipeStarted = true;
-                swipeStartPosition = touch.position;
+                swipeStarted = true;
+                swipeStartScreenPosition = touch.position;
                 return false;
             }
 
-            if (!nextLevelSwipeStarted)
+            if (!swipeStarted)
             {
                 return false;
             }
 
             if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
             {
-                nextLevelSwipeStarted = false;
-                Vector2 delta = touch.position - swipeStartPosition;
-                return EvaluateSwipeDelta(delta, out inputSource);
+                swipeStarted = false;
+                Vector2 delta = touch.position - swipeStartScreenPosition;
+                return EvaluateSwipeDelta(delta, out swipeStep, out inputSource);
             }
 
             return false;
@@ -243,84 +258,105 @@ public class MiniGameFlowController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            nextLevelSwipeStarted = true;
-            swipeStartPosition = Input.mousePosition;
+            swipeStarted = true;
+            swipeStartScreenPosition = Input.mousePosition;
             return false;
         }
 
-        if (nextLevelSwipeStarted && Input.GetMouseButtonUp(0))
+        if (swipeStarted && Input.GetMouseButtonUp(0))
         {
-            nextLevelSwipeStarted = false;
-            Vector2 delta = (Vector2)Input.mousePosition - swipeStartPosition;
-            return EvaluateSwipeDelta(delta, out inputSource);
+            swipeStarted = false;
+            Vector2 delta = (Vector2)Input.mousePosition - swipeStartScreenPosition;
+            return EvaluateSwipeDelta(delta, out swipeStep, out inputSource);
         }
 
         return false;
     }
 
-    private bool EvaluateSwipeDelta(Vector2 delta, out string inputSource)
+    private bool EvaluateSwipeDelta(Vector2 delta, out int swipeStep, out string inputSource)
     {
+        swipeStep = 0;
         inputSource = null;
 
         float absY = Mathf.Abs(delta.y);
         float absX = Mathf.Abs(delta.x);
 
-        if (absY < Mathf.Max(1f, nextLevelSwipeThresholdPixels))
+        if (absY < Mathf.Max(1f, swipeThresholdPixels))
         {
             return false;
         }
 
-        if (absX > absY * Mathf.Max(0f, nextLevelSwipeMaxHorizontalRatio))
+        if (absX > absY * Mathf.Max(0f, swipeMaxHorizontalRatio))
         {
             return false;
         }
 
-        inputSource = delta.y > 0f ? "swipe up" : "swipe down";
+        bool isSwipeUp = delta.y > 0f;
+        swipeStep = isSwipeUp ? +1 : -1;
+        inputSource = isSwipeUp ? "swipe up" : "swipe down";
         return true;
     }
 
     public void RequestNextLevelFromUpButton()
     {
-        RequestNextLevelTransition("up button");
+        RequestSwipeTransition(+1, "up button");
     }
 
     public void RequestNextLevelFromDownButton()
     {
-        RequestNextLevelTransition("down button");
+        RequestSwipeTransition(-1, "down button");
     }
 
-    private void RequestNextLevelTransition(string inputSource)
+    private void RequestSwipeTransition(int step, string inputSource)
     {
-        if (!waitingForNextLevelInput || isTransitionRequested)
+        if (!isRunning || gameEntries.Count == 0 || isTransitionRequested || step == 0)
         {
             return;
         }
 
         isTransitionRequested = true;
-        waitingForNextLevelInput = false;
-        Debug.Log($"[MiniGameFlow] Next level requested via {inputSource}. Starting transition.");
+        Debug.Log($"[MiniGameFlow] Swipe transition requested via {inputSource}. Step: {step}.");
         hudController?.HideLevelComplete();
-        GoToNextGame();
+        PlayTransition(step);
     }
 
-    private void GoToNextGame()
+    private void PlayTransition(int step)
     {
+        SwipeTransitionDirection direction = step > 0
+            ? SwipeTransitionDirection.Up
+            : SwipeTransitionDirection.Down;
+
         if (swipeFeedController != null)
         {
-            swipeFeedController.PlaySwipeDownTransition(() =>
+            swipeFeedController.PlaySwipeTransition(direction, () =>
             {
-                isTransitionRequested = false;
-                SpawnNextGame();
+                CompleteTransition(step);
             });
         }
         else
         {
-            isTransitionRequested = false;
-            SpawnNextGame();
+            CompleteTransition(step);
         }
     }
 
-    private void CleanupCurrentMiniGame()
+    private void CompleteTransition(int step)
+    {
+        currentIndex = WrapIndex(currentIndex + Math.Sign(step));
+        RebuildVisibleGames();
+    }
+
+    private int WrapIndex(int index)
+    {
+        if (gameEntries.Count == 0)
+        {
+            return 0;
+        }
+
+        int wrapped = index % gameEntries.Count;
+        return wrapped < 0 ? wrapped + gameEntries.Count : wrapped;
+    }
+
+    private void CleanupAllVisibleGames()
     {
         if (currentMiniGame != null)
         {
@@ -331,10 +367,19 @@ public class MiniGameFlowController : MonoBehaviour
         currentTimedMiniGame = null;
         currentEntry = null;
 
-        if (currentInstance != null)
+        DestroySlotInstance(ref previousInstance);
+        DestroySlotInstance(ref currentInstance);
+        DestroySlotInstance(ref nextInstance);
+    }
+
+    private static void DestroySlotInstance(ref GameObject instance)
+    {
+        if (instance == null)
         {
-            Destroy(currentInstance);
-            currentInstance = null;
+            return;
         }
+
+        Destroy(instance);
+        instance = null;
     }
 }
