@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca2e990d4fe7046a68b9a04a4d87b1b4, type: 3}
-  m_Name: MainPlaylist
+  m_Script: {fileID: 11500000, guid: a246f65115651452ca5c8e7687e2eb8b, type: 3}
+  m_Name: UnscrambleWordEntry
   m_EditorClassIdentifier: 
-  games:
-  - {fileID: 11400000, guid: 863443330998f7649a04e5f1b4acc9d1, type: 2}
-  - {fileID: 11400000, guid: 1fa85d6facd9d4428a9d4aaa33c21e89, type: 2}
+  gameId: unscramble_word
+  displayName: Unscramble Word
+  prefab: {fileID: 6165513772962068644, guid: 06b6aa53837e342c4b16117fe08a0f09, type: 3}
+  timeLimit: 1000
