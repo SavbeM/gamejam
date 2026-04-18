@@ -3474,7 +3474,8 @@ MonoBehaviour:
   procrastinationFill: {fileID: 0}
   procrastinationProgressBar: {fileID: 0}
   procrastinationProgressBarPrefab: {fileID: 7076724674982368705, guid: 74c372ab4a74048c2b25fb473f18b017, type: 3}
-  progressBarParent: {fileID: 2030241296}
+  bottomMetaGroup: {fileID: 275137222}
+  progressBarParent: {fileID: 0}
   resultText: {fileID: 0}
   levelCompleteGroup: {fileID: 1509568691}
   levelCompleteTitleText: {fileID: 1861497194}
