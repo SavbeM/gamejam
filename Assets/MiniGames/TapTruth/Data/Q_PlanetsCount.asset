@@ -9,9 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca2e990d4fe7046a68b9a04a4d87b1b4, type: 3}
-  m_Name: MainPlaylist
+  m_Script: {fileID: 11500000, guid: 11041f6ca2e7f43dd873b5b50cf49895, type: 3}
+  m_Name: Q_PlanetsCount
   m_EditorClassIdentifier: 
-  games:
-  - {fileID: 11400000, guid: 1fa85d6facd9d4428a9d4aaa33c21e89, type: 2}
-  - {fileID: 11400000, guid: 863443330998f7649a04e5f1b4acc9d1, type: 2}
+  questionText: How many planets are in the Solar System?
+  answers:
+  - 7
+  - 8
+  - 9
+  - 10
+  correctAnswerIndex: 1
