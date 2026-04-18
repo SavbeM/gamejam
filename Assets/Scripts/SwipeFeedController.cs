@@ -33,7 +33,7 @@ public class SwipeFeedController : MonoBehaviour
         isAnimating = true;
 
         Vector2 start = initialPosition;
-        Vector2 end = initialPosition + Vector2.down * swipeDistance;
+        Vector2 end = initialPosition + Vector2.up * swipeDistance;
 
         float time = 0f;
         while (time < swipeDuration)

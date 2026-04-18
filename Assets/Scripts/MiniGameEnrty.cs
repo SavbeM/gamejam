@@ -7,4 +7,7 @@ public class MiniGameEntry : ScriptableObject
     public string displayName;
     public string GameRules;
     public GameObject prefab;
+    
+    [Tooltip("If true, global timer will pause during this mini-game")]
+    public bool pauseTimer;
 }

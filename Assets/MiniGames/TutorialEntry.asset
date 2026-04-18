@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a246f65115651452ca5c8e7687e2eb8b, type: 3}
   m_Name: TutorialEntry
   m_EditorClassIdentifier: 
-  gameId: tutorial
+  gameId: tutorial_1
   displayName: Tutorial
+  GameRules: Read carefully! Because your doomscroll is in danger!
   prefab: {fileID: 6413152220078149348, guid: 4ba88d802fc004875b8c160ba2e29d40, type: 3}
-  timeLimit: 0
+  pauseTimer: 1

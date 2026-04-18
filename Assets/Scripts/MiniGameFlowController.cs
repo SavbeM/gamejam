@@ -23,7 +23,6 @@ public class MiniGameFlowController : MonoBehaviour
     private GameObject currentInstance;
     private IMiniGame currentMiniGame;
     private MiniGameEntry currentEntry;
-
     private bool isRunning;
     private bool waitingForNextLevelInput;
     private bool isTransitionRequested;
@@ -163,6 +162,18 @@ public class MiniGameFlowController : MonoBehaviour
         currentMiniGame.Setup(HandleMiniGameFinished);
         currentMiniGame.Begin();
 
+        if (globalProgressTimer != null)
+        {
+            if (currentEntry.pauseTimer)
+            {
+                globalProgressTimer.StopTimer();
+            }
+            else
+            {
+                globalProgressTimer.StartTimer();
+            }
+        }
+
         Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry.displayName}' started.");
     }
 
@@ -171,6 +182,13 @@ public class MiniGameFlowController : MonoBehaviour
         if (!isRunning)
         {
             return;
+        }
+
+
+
+        if (globalProgressTimer != null)
+        {
+            globalProgressTimer.StartTimer();
         }
 
         if (result == MiniGameResult.Win)
