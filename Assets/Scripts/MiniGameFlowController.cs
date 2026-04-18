@@ -52,10 +52,12 @@ public class MiniGameFlowController : MonoBehaviour
     {
         if (isRunning)
         {
+            Debug.LogWarning("[MiniGameFlow] StartFlow called while already running.");
             return;
         }
 
         isRunning = true;
+        Debug.Log("[MiniGameFlow] Flow started.");
         BuildQueue();
 
         if (gameQueue.Count == 0)
@@ -70,6 +72,7 @@ public class MiniGameFlowController : MonoBehaviour
 
     public void StopFlow()
     {
+        Debug.Log("[MiniGameFlow] Flow stopped.");
         isRunning = false;
         waitingForNextLevelInput = false;
 
@@ -99,6 +102,8 @@ public class MiniGameFlowController : MonoBehaviour
                 gameQueue.Enqueue(entry);
             }
         }
+
+        Debug.Log($"[MiniGameFlow] Queue rebuilt. Entries: {gameQueue.Count}.");
     }
 
     private void SpawnNextGame()
@@ -124,6 +129,7 @@ public class MiniGameFlowController : MonoBehaviour
         }
 
         currentEntry = gameQueue.Dequeue();
+        Debug.Log($"[MiniGameFlow] Spawning mini-game '{currentEntry.displayName}'.");
         currentInstance = Instantiate(currentEntry.prefab, miniGameHost);
         currentMiniGame = currentInstance.GetComponent<IMiniGame>() ?? currentInstance.GetComponentInChildren<IMiniGame>();
         currentTimedMiniGame = currentInstance.GetComponent<TimedMiniGameBase>() ?? currentInstance.GetComponentInChildren<TimedMiniGameBase>();
@@ -150,6 +156,7 @@ public class MiniGameFlowController : MonoBehaviour
 
         currentMiniGame.Setup(HandleMiniGameFinished);
         currentMiniGame.Begin();
+        Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry.displayName}' started.");
     }
 
     private void HandleMiniGameFinished(MiniGameResult result)
@@ -161,11 +168,13 @@ public class MiniGameFlowController : MonoBehaviour
 
         if (result == MiniGameResult.Win)
         {
+            Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with WIN.");
             waitingForNextLevelInput = true;
             hudController?.ShowLevelComplete("LEVEL CLEARED", "Swipe to next level");
             return;
         }
 
+        Debug.Log($"[MiniGameFlow] Mini-game '{currentEntry?.displayName}' completed with result: {result}.");
         hudController?.PlayMiniGameResult(result);
         GoToNextGame();
     }
@@ -194,6 +203,7 @@ public class MiniGameFlowController : MonoBehaviour
                 return;
             }
 
+            Debug.Log($"[MiniGameFlow] Swipe detected. deltaX={deltaX:0.##}, deltaY={deltaY:0.##}. Moving to next level.");
             waitingForNextLevelInput = false;
             hudController?.HideLevelComplete();
             GoToNextGame();

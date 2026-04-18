@@ -24,6 +24,7 @@ public class SortGarbageMiniGame : TimedMiniGameBase
     public override void Setup(System.Action<MiniGameResult> onFinished)
     {
         base.Setup(onFinished);
+        Debug.Log("[SortGarbage] Setup started.");
 
         if (items == null || items.Count == 0)
         {
@@ -49,6 +50,8 @@ public class SortGarbageMiniGame : TimedMiniGameBase
             itemView.Swiped -= HandleSwiped;
             itemView.Swiped += HandleSwiped;
         }
+
+        Debug.Log($"[SortGarbage] New item spawned: {currentItem.DisplayName}.");
     }
 
     public override void Cleanup()
@@ -64,6 +67,7 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         if (!IsRunning || IsFinished || currentItem == null)
             return;
 
+        Debug.Log($"[SortGarbage] Swipe input received. Selected={selectedCategory}, Expected={currentItem.CorrectCategory}.");
         bool isCorrect = selectedCategory == currentItem.CorrectCategory;
 
         if (selectedCategory == SortCategory.Inedible)
@@ -84,10 +88,12 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         }
 
         Finish(MiniGameResult.Win);
+        Debug.Log("[SortGarbage] Mini-game passed.");
     }
 
     protected override void OnTimeExpired()
     {
+        Debug.Log("[SortGarbage] Time expired.");
         Finish(MiniGameResult.Fail);
     }
 
@@ -112,6 +118,7 @@ public class SortGarbageMiniGame : TimedMiniGameBase
         SetZoneAlpha(rightZoneHighlight, 0.18f);
 
         currentItem = items[Random.Range(0, items.Count)];
+        Debug.Log($"[SortGarbage] Round restarted with item: {currentItem.DisplayName}.");
 
         if (itemView != null)
         {

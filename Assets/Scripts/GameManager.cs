@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     [Header("Session")]
     [SerializeField] private float totalSessionTime = 45f;
     [SerializeField] private bool autoStartOnSceneLoad = true;
+    [SerializeField] private bool allowTapToRestart = true;
 
     [Header("Refs")]
     [SerializeField] private MiniGameFlowController flowController;
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+        Debug.Log("[GameManager] Awake completed.");
 
         if (flowController == null)
         {
@@ -44,6 +46,7 @@ public class GameManager : MonoBehaviour
     {
         if (autoStartOnSceneLoad)
         {
+            Debug.Log("[GameManager] Auto-start is enabled. Starting session.");
             StartSession();
         }
     }
@@ -52,6 +55,12 @@ public class GameManager : MonoBehaviour
     {
         if (!isGameActive)
         {
+            if (allowTapToRestart && Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("[GameManager] Restart input received.");
+                RestartSession();
+            }
+
             return;
         }
 
@@ -65,6 +74,7 @@ public class GameManager : MonoBehaviour
 
         if (remainingTime <= 0f)
         {
+            Debug.Log("[GameManager] Session timer reached zero.");
             EndSession();
         }
     }
@@ -73,6 +83,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameActive)
         {
+            Debug.LogWarning("[GameManager] StartSession was called while session is already active.");
             return;
         }
 
@@ -88,6 +99,7 @@ public class GameManager : MonoBehaviour
 
         remainingTime = totalSessionTime;
         isGameActive = true;
+        Debug.Log($"[GameManager] Session started. Duration: {totalSessionTime:0.##}s.");
 
         hudController?.ShowGameplay();
         hudController?.SetProgress(1f);
@@ -106,11 +118,22 @@ public class GameManager : MonoBehaviour
     {
         if (!isGameActive)
         {
+            Debug.LogWarning("[GameManager] EndSession was called while session is not active.");
             return;
         }
 
         isGameActive = false;
+        Debug.Log("[GameManager] Session ended.");
         flowController?.StopFlow();
         hudController?.ShowGameOver();
+    }
+
+    public void RestartSession()
+    {
+        Debug.Log("[GameManager] Restarting session.");
+        flowController?.StopFlow();
+        remainingTime = totalSessionTime;
+        isGameActive = false;
+        StartSession();
     }
 }
