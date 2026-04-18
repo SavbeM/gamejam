@@ -26,6 +26,7 @@ public class HUDController : MonoBehaviour
     [SerializeField] private Image procrastinationFill;
     [SerializeField] private HorizontalProgressBar procrastinationProgressBar;
     [SerializeField] private HorizontalProgressBar procrastinationProgressBarPrefab;
+    [SerializeField] private RectTransform bottomMetaGroup;
     [SerializeField] private RectTransform progressBarParent;
 
     [Header("Optional result flash")]
@@ -228,7 +229,8 @@ public class HUDController : MonoBehaviour
             return;
         }
 
-        RectTransform parent = progressBarParent;
+        RectTransform resolvedBottomMeta = ResolveBottomMetaGroup();
+        RectTransform parent = progressBarParent != null ? progressBarParent : resolvedBottomMeta;
         if (parent == null)
         {
             parent = transform as RectTransform;
@@ -239,17 +241,10 @@ public class HUDController : MonoBehaviour
             return;
         }
 
-        RectTransform topBarRect = (transform.Find("GameplayGroup/TopBar") ?? transform.Find("TopBar")) as RectTransform;
-
         HorizontalProgressBar existingBar = parent.GetComponentInChildren<HorizontalProgressBar>(true);
         if (existingBar != null)
         {
             procrastinationProgressBar = existingBar;
-            RectTransform existingRect = procrastinationProgressBar.transform as RectTransform;
-            if (existingRect != null)
-            {
-                existingRect.SetAsLastSibling();
-            }
             return;
         }
 
@@ -266,28 +261,24 @@ public class HUDController : MonoBehaviour
         if (rootRect != null)
         {
             rootRect.SetAsLastSibling();
-            rootRect.anchorMin = new Vector2(0.5f, 1f);
-            rootRect.anchorMax = new Vector2(0.5f, 1f);
-            rootRect.pivot = new Vector2(0.5f, 1f);
-            rootRect.anchoredPosition = new Vector2(0f, CalculateProgressBarYOffset(parent, topBarRect));
         }
     }
 
-    private float CalculateProgressBarYOffset(RectTransform parent, RectTransform topBarRect)
+    private RectTransform ResolveBottomMetaGroup()
     {
-        const float defaultOffset = -112f;
-        const float extraSpacing = 18f;
-
-        if (topBarRect == null || parent == null)
+        if (bottomMetaGroup != null)
         {
-            return defaultOffset;
+            return bottomMetaGroup;
         }
 
-        Vector3[] corners = new Vector3[4];
-        topBarRect.GetWorldCorners(corners);
-        Vector3 bottomCenter = (corners[0] + corners[3]) * 0.5f;
-        Vector3 localBottomCenter = parent.InverseTransformPoint(bottomCenter);
-        return localBottomCenter.y - extraSpacing;
+        Transform resolved = transform.Find("BottomMeta");
+        if (resolved == null)
+        {
+            resolved = transform.Find("GameplayGroup/BottomMeta");
+        }
+
+        bottomMetaGroup = resolved as RectTransform;
+        return bottomMetaGroup;
     }
 
     private void ApplyOverlayStage(OverlayStage stage, string title = null, string hint = null)
