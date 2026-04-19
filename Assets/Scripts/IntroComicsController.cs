@@ -15,9 +15,13 @@ public class IntroComicsController : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float fadeDuration = 0.4f;
     [SerializeField] private string nextSceneName = "UIScene";
+    [SerializeField] private bool showEndingButtonsWhenNoNextScene = true;
+    [SerializeField] private string restartSceneName = "UIScene";
+    [SerializeField] private string exitSceneName = "IntroScene";
 
     private int currentPanel = 0;
     private bool isTransitioning = false;
+    private bool IsEndingComics => showEndingButtonsWhenNoNextScene && string.IsNullOrWhiteSpace(nextSceneName);
 
     private void Start()
     {
@@ -29,6 +33,7 @@ public class IntroComicsController : MonoBehaviour
     private void Update()
     {
         if (isTransitioning) return;
+        if (IsEndingComics && currentPanel >= panels.Length - 1) return;
 
         if (Input.GetMouseButtonDown(0) || 
             Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
@@ -41,7 +46,11 @@ public class IntroComicsController : MonoBehaviour
     {
         if (currentPanel >= panels.Length - 1)
         {
-            // Уже на последней картинке — переходим в игру
+            if (IsEndingComics)
+            {
+                return;
+            }
+
             StartCoroutine(FadeToScene());
             return;
         }
@@ -103,5 +112,52 @@ public class IntroComicsController : MonoBehaviour
         }
 
         SceneManager.LoadScene(nextSceneName);
+    }
+
+    private void OnGUI()
+    {
+        if (!IsEndingComics || isTransitioning || currentPanel < panels.Length - 1)
+        {
+            return;
+        }
+
+        float buttonWidth = 220f;
+        float buttonHeight = 70f;
+        float spacing = 24f;
+        float totalWidth = buttonWidth * 2f + spacing;
+        float startX = (Screen.width - totalWidth) * 0.5f;
+        float y = Screen.height - buttonHeight - 40f;
+
+        if (GUI.Button(new Rect(startX, y, buttonWidth, buttonHeight), "Restart"))
+        {
+            RestartGame();
+        }
+
+        if (GUI.Button(new Rect(startX + buttonWidth + spacing, y, buttonWidth, buttonHeight), "Exit"))
+        {
+            ExitGame();
+        }
+    }
+
+    private void RestartGame()
+    {
+        if (string.IsNullOrWhiteSpace(restartSceneName))
+        {
+            Debug.LogError("[IntroComicsController] Restart scene name is empty.");
+            return;
+        }
+
+        SceneManager.LoadScene(restartSceneName);
+    }
+
+    private void ExitGame()
+    {
+        if (!string.IsNullOrWhiteSpace(exitSceneName))
+        {
+            SceneManager.LoadScene(exitSceneName);
+            return;
+        }
+
+        Application.Quit();
     }
 }
