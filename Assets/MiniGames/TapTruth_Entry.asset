@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameId: tap_truth_1
   displayName: TapTruth
-  GameRules: "Decide quickly. One choice \u2014 right or wrong."
+  gameRules: "Decide quickly. One choice \u2014 right or wrong."
   prefab: {fileID: 6028642166914528690, guid: dc81f50320b464ca387a16a6e20b9569, type: 3}
   pauseTimer: 0

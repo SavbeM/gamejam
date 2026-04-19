@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameId: unscramble_word
   displayName: Unscramble Word
-  GameRules: Fix the scrambled word as fast as you can.
+  gameRules: Fix the scrambled word as fast as you can.
   prefab: {fileID: 6165513772962068644, guid: 06b6aa53837e342c4b16117fe08a0f09, type: 3}
+  pauseTimer: 0

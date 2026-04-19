@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameId: sort_garbage_01
   displayName: Sort Garbage
-  GameRules: "Sort everything correctly. Don\u2019t make mistakes."
+  gameRules: "Sort everything correctly. Don\u2019t make mistakes."
   prefab: {fileID: 6507325965108050561, guid: 3808bfe896c450846868812626b2a83c, type: 3}
+  pauseTimer: 0
