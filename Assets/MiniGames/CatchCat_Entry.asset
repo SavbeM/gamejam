@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameId: catgame_1
   displayName: CatCatch
-  GameRules: Tap fast and catch the cat before it disappears.
+  gameRules: Tap fast and catch the cat before it disappears.
   prefab: {fileID: 6076492171068221972, guid: 6093c9bcfaa26554bb0c52d251fb7476, type: 3}
+  pauseTimer: 0

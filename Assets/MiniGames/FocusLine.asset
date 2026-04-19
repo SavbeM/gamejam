@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameId: FocusLine
   displayName: FocusLine
-  GameRules: Stop the line in the center. Stay sharp and precise.
+  gameRules: Stop the line in the center. Stay sharp and precise.
   prefab: {fileID: 7985015207447445173, guid: 38d77753495bed2498ad3c782a0fa8e4, type: 3}
+  pauseTimer: 0
