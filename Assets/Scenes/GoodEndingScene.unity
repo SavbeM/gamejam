@@ -233,6 +233,7 @@ MonoBehaviour:
   - {fileID: -579837623601376033, guid: f9042678fee7d42138205f88023beb01, type: 3}
   - {fileID: -1381028798937603610, guid: d8c79d53f542c482fa7388edd7c26f71, type: 3}
   - {fileID: 7813482940240886164, guid: f677786f5547548c981ae67c5a0dabbc, type: 3}
+  - {fileID: 8233598693349434312, guid: eeda79aba00124e16b451af97fb27749, type: 3}
   fadeDuration: 0.4
   nextSceneName: 
 --- !u!114 &563562797
